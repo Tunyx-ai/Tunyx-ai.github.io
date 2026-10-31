@@ -1,0 +1,131 @@
+---
+title: Calling your model
+description: Use Tunyx from OpenAI, Anthropic and Ollama clients, with streaming, tools and JSON.
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+Every deployment is served on one endpoint, by default `http://127.0.0.1:8800`. The `model` field in requests is
+the **deployment name**.
+
+## OpenAI
+
+Supported: `/v1/chat/completions`, `/v1/completions`, `/v1/embeddings`, `/v1/models` and the **Responses API**
+`/v1/responses`. Streaming, tool calls, JSON mode and JSON schema, and reasoning output all work.
+
+<Tabs syncKey="lang">
+  <TabItem label="Python">
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(base_url="http://127.0.0.1:8800/v1", api_key="none")
+    stream = client.chat.completions.create(
+        model="support",
+        messages=[{"role": "user", "content": "Summarize this ticket"}],
+        stream=True,
+    )
+    for chunk in stream:
+        print(chunk.choices[0].delta.content or "", end="")
+    ```
+  </TabItem>
+  <TabItem label="TypeScript">
+    ```ts
+    import OpenAI from 'openai';
+
+    const client = new OpenAI({ baseURL: 'http://127.0.0.1:8800/v1', apiKey: 'none' });
+    const reply = await client.chat.completions.create({
+      model: 'support',
+      messages: [{ role: 'user', content: 'Summarize this ticket' }],
+    });
+    console.log(reply.choices[0].message.content);
+    ```
+  </TabItem>
+  <TabItem label="curl">
+    ```bash
+    curl http://127.0.0.1:8800/v1/chat/completions \
+      -H 'Content-Type: application/json' \
+      -d '{"model": "support", "messages": [{"role": "user", "content": "Hi"}]}'
+    ```
+  </TabItem>
+</Tabs>
+
+### Tool calling
+
+```python
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_weather",
+        "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]},
+    },
+}]
+reply = client.chat.completions.create(model="support", messages=messages, tools=tools)
+```
+
+Tunyx picks the right tool-call and reasoning parser for each model family automatically.
+
+## Anthropic
+
+`/v1/messages` and `/v1/messages/count_tokens`, with streaming, tool use, thinking blocks, stop sequences and
+cached-token usage. Agents built on the Claude SDK work unchanged.
+
+```python
+import anthropic
+
+client = anthropic.Anthropic(base_url="http://127.0.0.1:8800", api_key="none")
+msg = client.messages.create(
+    model="support",
+    max_tokens=512,
+    messages=[{"role": "user", "content": "Hi"}],
+)
+```
+
+## Ollama
+
+`/api/chat`, `/api/generate`, `/api/embed`, `/api/tags`, `/api/show`, `/api/ps`, `/api/pull` and
+`/api/version`, so Open WebUI, Continue and other Ollama-native tools can point at Tunyx.
+
+```bash
+curl http://127.0.0.1:8800/api/chat \
+  -d '{"model": "support", "messages": [{"role": "user", "content": "Hi"}]}'
+```
+
+## LiteLLM
+
+Add each deployment as an `openai/` model:
+
+```yaml
+model_list:
+  - model_name: support
+    litellm_params:
+      model: openai/support
+      api_base: http://tunyx-host:8800/v1
+      api_key: sk-your-tunyx-key
+```
+
+## Model names
+
+- With **one deployment** and no key scopes, any model name routes to it, so tools that hard-code `gpt-4o` work.
+- With **several teams**, names are strict: unknown names return 404. Add extra names with aliases:
+
+  ```bash
+  export TUNYX_MODEL_ALIASES="gpt-4o=support,claude-sonnet=support"
+  ```
+
+- **LoRA adapters** appear in `/v1/models` and are requested by name.
+- A `:latest` suffix is ignored, as in Ollama.
+
+## Errors
+
+Tunyx never fails silently:
+
+| Situation | Response |
+|---|---|
+| Prompt longer than the context limit | 400, stating the limit and how to raise it, never silent truncation |
+| Deployment at capacity | 429 (529 on the Anthropic API) with `Retry-After`; SDKs back off and retry |
+| Model loading or waking | Request waits in the queue up to `TUNYX_QUEUE_TIMEOUT` |
+| Engine crashed | Request waits up to 30 s for the restart instead of failing |
+
+<Aside type="tip">
+  Send `X-Session-ID` with agent requests. Tunyx routes a session to the same replica so its prompt cache is reused.
+</Aside>

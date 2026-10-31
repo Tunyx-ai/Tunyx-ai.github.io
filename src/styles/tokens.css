@@ -1,0 +1,53 @@
+/* Tunyx design tokens: the single source of brand color, type and spacing. */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+:root {
+  /* Surfaces: blue-black ink, stepped for depth */
+  --ink-0: #05070a;
+  --ink-1: #080b10;
+  --ink-2: #0c1016;
+  --ink-3: #11161e;
+  --ink-4: #171d27;
+  --ink-5: #1f2733;
+
+  /* Text */
+  --fg-1: #eef1f6;
+  --fg-2: #a9b2c1;
+  --fg-3: #6f7a8c;
+
+  /* Lines */
+  --line-1: rgba(160, 175, 200, 0.10);
+  --line-2: rgba(160, 175, 200, 0.18);
+  --line-3: rgba(160, 175, 200, 0.28);
+
+  /* Brand: signal mint into sky. Mint is the action color; the gradient is reserved for the mark and hero accents. */
+  --mint-300: #8ff5d4;
+  --mint-400: #3ee8b5;
+  --mint-500: #1fcf9a;
+  --mint-700: #087a5a;
+  --sky-400: #38bdf8;
+  --brand-gradient: linear-gradient(100deg, var(--mint-400) 0%, #3fd8d0 45%, var(--sky-400) 100%);
+  --on-mint: #03140e;
+
+  /* Status (reserved; always paired with an icon or label) */
+  --good: #22c55e;
+  --warn: #fab219;
+  --bad: #f05d5e;
+
+  /* Chart series (validated: dark surface, CVD-safe, plus dashed/direct-label secondary encoding) */
+  --series-tuned: #17a37a;
+  --series-stock: #7a8fd1;
+
+  /* Type */
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Shape and motion */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 20px 50px -20px rgba(0, 0, 0, 0.6);
+}

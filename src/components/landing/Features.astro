@@ -1,0 +1,189 @@
+---
+---
+<section class="section" id="product">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Product</span>
+      <h2 class="h-section">Everything between a model and a production endpoint.</h2>
+    </div>
+
+    <div class="bento">
+      <!-- Workload profiles -->
+      <article class="card f s3 reveal">
+        <div class="viz profiles" aria-hidden="true">
+          <div class="seg"><span>chat</span><span class="on">agent</span><span>batch</span><span>mixed</span></div>
+          <dl>
+            <div><dt>Prompts</dt><dd>2k–8k tokens, shared prefixes</dd></div>
+            <div><dt>Concurrency</dt><dd>1 → 16 users</dd></div>
+            <div><dt>Targets</dt><dd>TTFT p50 800 ms · p99 4 s</dd></div>
+            <div><dt>Must pass</dt><dd>tool calls · JSON</dd></div>
+          </dl>
+        </div>
+        <h3>Tuned for your workload, not a benchmark</h3>
+        <p>Pick chat, agent, batch or mixed. Each profile encodes real traffic and latency targets, and every config is measured against it.</p>
+      </article>
+
+      <!-- Quality gates -->
+      <article class="card f s3 reveal">
+        <div class="viz gate" aria-hidden="true">
+          <div class="row"><span class="ok">✓</span>Reasoning &amp; knowledge<span class="sc">0.94</span></div>
+          <div class="row"><span class="ok">✓</span>JSON &amp; structured output<span class="sc">1.00</span></div>
+          <div class="row"><span class="ok">✓</span>Instruction following<span class="sc">0.92</span></div>
+          <div class="row bad"><span class="no">✕</span>Tool calls (int4 build)<span class="sc">71% &lt; 75%</span></div>
+        </div>
+        <h3>Quality gates before anything serves</h3>
+        <p>68 checks across reasoning, tools, JSON, code and long context. Lossy configs are compared against full precision, and regressions never reach users.</p>
+      </article>
+
+      <!-- Canary -->
+      <article class="card f s2 reveal">
+        <div class="viz canary" aria-hidden="true">
+          <div class="bar"><span style="--w:10%"></span><em>10%</em></div>
+          <div class="bar"><span style="--w:50%"></span><em>50%</em></div>
+          <div class="bar"><span style="--w:100%"></span><em>100%</em></div>
+          <div class="rb"><span class="pill">auto-rollback armed</span></div>
+        </div>
+        <h3>Safe swaps with canary</h3>
+        <p>New models and settings take 10%, then 50%, then 100% of traffic, compared live and rolled back automatically on regression.</p>
+      </article>
+
+      <!-- Retuning -->
+      <article class="card f s2 reveal">
+        <div class="viz proposal" aria-hidden="true">
+          <div class="p-top"><span class="tag">proposal</span><span class="muted mono">from live traffic</span></div>
+          <p class="mono">max_num_seqs 128 → 256</p>
+          <p class="why">KV cache 41% used, requests queueing at peak</p>
+          <div class="p-act"><span class="b on">Approve</span><span class="b">Reject</span></div>
+        </div>
+        <h3>Live retuning</h3>
+        <p>Watches latency, KV pressure, queueing and prefix hits, then proposes (or auto-applies, within your bounds) a better config.</p>
+      </article>
+
+      <!-- Economics -->
+      <article class="card f s2 reveal">
+        <div class="viz econ" aria-hidden="true">
+          <div class="big">$0.21<small>/ Mtok</small></div>
+          <div class="cmp"><span class="down">↓ 65%</span> vs your $0.60 API price</div>
+          <div class="idle">Using 38% of capacity · ≈$37/day idle</div>
+        </div>
+        <h3>Cost per token, from day one</h3>
+        <p>Cost per million tokens, utilization, idle spend, and a comparison with the API price you pay today.</p>
+      </article>
+
+      <!-- APIs -->
+      <article class="card f s3 reveal">
+        <div class="viz apis" aria-hidden="true">
+          <div class="ep"><span class="m">POST</span>/v1/chat/completions<span class="tag2">OpenAI</span></div>
+          <div class="ep"><span class="m">POST</span>/v1/responses<span class="tag2">OpenAI</span></div>
+          <div class="ep"><span class="m">POST</span>/v1/messages<span class="tag2">Anthropic</span></div>
+          <div class="ep"><span class="m">POST</span>/api/chat<span class="tag2">Ollama</span></div>
+        </div>
+        <h3>One endpoint. Every client you already use.</h3>
+        <p>OpenAI, Responses, Anthropic and Ollama APIs with streaming, tools and reasoning, so SDKs, agents, Open WebUI and LiteLLM work unchanged.</p>
+      </article>
+
+      <!-- Packing -->
+      <article class="card f s3 reveal">
+        <div class="viz pack" aria-hidden="true">
+          <div class="gpu"><span class="lbl mono">GPU 0 · 80 GB</span>
+            <div class="mem">
+              <span class="m1" style="--w:46%">chat · 7B</span>
+              <span class="m2" style="--w:38%">coder · 14B</span>
+              <span class="m3" style="--w:16%">zzz</span>
+            </div>
+          </div>
+          <p class="mono muted">batch-8B sleeping · wakes on next request</p>
+        </div>
+        <h3>Several models, one machine</h3>
+        <p>Models share GPUs by memory share. Idle, lower-priority models sleep and wake on demand, with requests queued, never dropped.</p>
+      </article>
+
+      <!-- Small trio -->
+      <article class="card f s2 reveal small">
+        <span class="ico" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        </span>
+        <h3>Self-healing</h3>
+        <p>Crashed engines restart while requests wait, hung engines leave routing, and repeated out-of-memory crashes roll out a smaller config.</p>
+      </article>
+      <article class="card f s2 reveal small">
+        <span class="ico" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 9-3 3 3 3"/><path d="m16 9 3 3-3 3"/><path d="m13 6-2 12"/></svg>
+        </span>
+        <h3>Agent-first defaults</h3>
+        <p>Prefix caching, session affinity and the right tool-call and reasoning parser for each model family, with no setup.</p>
+      </article>
+      <article class="card f s2 reveal small">
+        <span class="ico" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        </span>
+        <h3>Explains every choice</h3>
+        <p><code>tunyx plan</code> shows what it will run and why before anything starts. Errors come with the fix.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .bento { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+  .f { padding: 22px 24px 26px; display: flex; flex-direction: column; overflow: hidden; }
+  .s3 { grid-column: span 3; }
+  .s2 { grid-column: span 2; }
+  h3 { margin: 22px 0 8px; font-size: 18px; letter-spacing: -0.02em; font-weight: 600; }
+  p { margin: 0; color: var(--fg-2); font-size: 14.8px; line-height: 1.6; }
+  .small h3 { margin-top: 18px; }
+  .ico { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; color: var(--mint-400); background: rgba(62, 232, 181, 0.08); border: 1px solid rgba(62, 232, 181, 0.2); }
+  code { font-size: 0.88em; background: rgba(255, 255, 255, 0.05); padding: 1px 6px; border-radius: 5px; border: 1px solid var(--line-1); }
+  .mono { font-family: var(--font-mono); font-size: 12.5px; }
+
+  .viz { border-radius: 14px; border: 1px solid var(--line-1); background: rgba(5, 7, 10, 0.5); padding: 16px; min-height: 172px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+
+  .seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); }
+  .seg span { text-align: center; font-size: 13px; padding: 6px 0; border-radius: 7px; color: var(--fg-3); }
+  .seg .on { background: var(--ink-5); color: var(--fg-1); box-shadow: 0 0 0 1px var(--line-2); }
+  dl { margin: 6px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+  dl div { display: flex; flex-direction: column; }
+  dt { font-size: 11.5px; color: var(--fg-3); }
+  dd { margin: 0; font-size: 13.5px; color: var(--fg-1); }
+
+  .gate .row { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--fg-1); padding: 7px 10px; border-radius: 9px; background: rgba(255, 255, 255, 0.025); }
+  .gate .sc { margin-left: auto; font-family: var(--font-mono); font-size: 12.5px; color: var(--fg-3); }
+  .gate .ok { color: var(--mint-400); width: 14px; }
+  .gate .no { color: var(--bad); width: 14px; }
+  .gate .bad { background: rgba(240, 93, 94, 0.08); box-shadow: inset 0 0 0 1px rgba(240, 93, 94, 0.25); }
+  .gate .bad .sc { color: #ff9c9c; }
+
+  .canary .bar { position: relative; height: 26px; border-radius: 8px; background: rgba(255, 255, 255, 0.04); overflow: hidden; }
+  .canary .bar span { position: absolute; inset: 0 auto 0 0; width: var(--w); background: linear-gradient(90deg, rgba(62, 232, 181, 0.25), rgba(62, 232, 181, 0.55)); border-radius: 8px; }
+  .canary .bar em { position: absolute; right: 10px; top: 4px; font-style: normal; font-family: var(--font-mono); font-size: 12px; color: var(--fg-2); }
+  .rb { display: flex; }
+  .pill { font-size: 12px; padding: 3px 10px; border-radius: 999px; color: var(--warn); background: rgba(250, 178, 25, 0.1); border: 1px solid rgba(250, 178, 25, 0.25); }
+
+  .proposal .p-top { display: flex; justify-content: space-between; align-items: center; }
+  .tag { font-size: 11.5px; padding: 2px 8px; border-radius: 6px; background: rgba(56, 189, 248, 0.12); color: var(--sky-400); }
+  .proposal .mono:not(.muted) { color: var(--fg-1); font-size: 14px; }
+  .why { font-size: 13px !important; color: var(--fg-3) !important; }
+  .p-act { display: flex; gap: 8px; }
+  .b { font-size: 12.5px; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--line-2); color: var(--fg-2); }
+  .b.on { background: var(--mint-400); color: var(--on-mint); border-color: transparent; font-weight: 600; }
+
+  .econ .big { font-size: 40px; font-weight: 620; letter-spacing: -0.04em; line-height: 1; }
+  .econ .big small { font-size: 14px; color: var(--fg-3); font-weight: 500; margin-left: 6px; letter-spacing: 0; }
+  .cmp { font-size: 13.5px; color: var(--fg-2); }
+  .down { color: var(--mint-400); font-weight: 600; }
+  .idle { font-size: 12.5px; color: var(--fg-3); padding-top: 8px; border-top: 1px dashed var(--line-2); }
+
+  .ep { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 13px; color: var(--fg-1); padding: 7px 10px; border-radius: 9px; background: rgba(255, 255, 255, 0.025); }
+  .ep .m { font-size: 11px; color: var(--mint-400); background: rgba(62, 232, 181, 0.1); padding: 1px 6px; border-radius: 5px; }
+  .tag2 { margin-left: auto; font-family: var(--font-sans); font-size: 12px; color: var(--fg-3); }
+
+  .pack .lbl { color: var(--fg-3); display: block; margin-bottom: 8px; }
+  .mem { display: flex; gap: 3px; height: 54px; }
+  .mem span { width: var(--w); border-radius: 9px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 12px; color: var(--fg-1); }
+  .m1 { background: linear-gradient(180deg, rgba(62, 232, 181, 0.35), rgba(62, 232, 181, 0.18)); box-shadow: inset 0 0 0 1px rgba(62, 232, 181, 0.4); }
+  .m2 { background: linear-gradient(180deg, rgba(56, 189, 248, 0.32), rgba(56, 189, 248, 0.16)); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.4); }
+  .m3 { background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0 6px, transparent 6px 12px); box-shadow: inset 0 0 0 1px var(--line-2); color: var(--fg-3) !important; }
+
+  @media (max-width: 1000px) { .s3, .s2 { grid-column: span 3; } }
+  @media (max-width: 680px) { .bento { grid-template-columns: 1fr; } .s3, .s2 { grid-column: auto; } }
+</style>

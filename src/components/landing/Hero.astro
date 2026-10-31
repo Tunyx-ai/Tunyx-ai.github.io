@@ -1,0 +1,237 @@
+---
+import { SITE, url, pilotHref } from '../../site.config';
+
+// Lines play in sequence; `cls` picks the color treatment.
+const lines = [
+  { t: 'cmd', html: '<span class="tok-prompt">$</span> tunyx up qwen2.5:7b --profile agent' },
+  { t: 'ok', html: '<b>Hardware</b>   1× NVIDIA H100 80GB · CUDA 12.4' },
+  { t: 'ok', html: '<b>Model</b>      Qwen2.5-7B-Instruct · 7.6B params · 15.2 GB' },
+  { t: 'ok', html: '<b>Plan</b>       vllm · bf16 · ctx 32,768 · prefix cache · tool parser hermes' },
+  { t: 'live', html: '<b>Serving</b>    http://127.0.0.1:8800/v1 <span class="dim">ready in 41s</span>' },
+  { t: 'run', html: '<b>Optimizing</b> in the background · 4 candidates on your agent workload' },
+  { t: 'sub', html: 'fp8 · seqs 128 · ngram spec   TTFT p50 58ms   quality 0.95 <span class="pass">pass</span>' },
+  { t: 'sub', html: 'int4 awq · seqs 256           tool calls 71% &lt; 75%  <span class="fail">rejected</span>' },
+  { t: 'ok', html: '<b>Promoted</b>   fp8 config · <span class="gain">+38% goodput vs stock defaults</span>' },
+];
+---
+<section class="hero">
+  <div class="bg" aria-hidden="true">
+    <div class="grid"></div>
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+    <svg class="wave" viewBox="0 0 1200 200" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="hw" x1="0" x2="1">
+          <stop offset="0" stop-color="#3EE8B5" stop-opacity="0" />
+          <stop offset=".25" stop-color="#3EE8B5" stop-opacity=".9" />
+          <stop offset=".8" stop-color="#38BDF8" stop-opacity=".6" />
+          <stop offset="1" stop-color="#38BDF8" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path d="M0 100 C 60 10, 120 10, 180 100 S 300 180, 360 100 S 460 40, 520 100 S 610 140, 660 100 S 740 78, 790 100 S 860 110, 910 100 S 1000 96, 1050 100 S 1150 100, 1200 100"
+        fill="none" stroke="url(#hw)" stroke-width="1.5" />
+    </svg>
+  </div>
+
+  <div class="container hero-inner">
+    <a class="badge reveal" href={url('docs/getting-started/demo/')}>
+      <span class="badge-pill">{SITE.status}</span>
+      <span>Run the full product in 60 seconds, no GPU needed</span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a>
+
+    <h1 class="h-display reveal">
+      Inference that<br /><span class="grad-text">tunes itself.</span>
+    </h1>
+    <p class="lede reveal">
+      Point Tunyx at a model and tell it your workload. Get a fast, quality-checked, OpenAI-compatible endpoint on
+      your own GPUs that stays fast as your traffic changes.
+    </p>
+
+    <div class="cta reveal">
+      <a class="btn btn-primary" href={url('docs/getting-started/quickstart/')}>Get started <span class="arrow">→</span></a>
+      <a class="btn btn-ghost" href={pilotHref}>Request a pilot</a>
+    </div>
+
+    <button class="install reveal" data-copy="tunyx up qwen2.5:7b" aria-label="Copy command: tunyx up qwen2.5:7b">
+      <span class="tok-prompt">$</span>
+      <code>tunyx up qwen2.5:7b</code>
+      <span class="copy-ic" aria-hidden="true">
+        <svg class="i-copy" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <svg class="i-ok" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>
+      </span>
+    </button>
+
+    <div class="window reveal" data-term>
+      <div class="win-bar">
+        <span class="lights"><i></i><i></i><i></i></span>
+        <span class="win-title">tunyx · terminal</span>
+        <span class="win-note">illustrative output</span>
+      </div>
+      <div class="win-body">
+        <div class="term" aria-label="Example: tunyx up output">
+          {lines.map((l, i) => (
+            <div class={`ln ln-${l.t}`} style={`--i:${i}`}>
+              {l.t === 'ok' && <span class="ic ic-ok" aria-hidden="true">✓</span>}
+              {l.t === 'live' && <span class="ic ic-live" aria-hidden="true">●</span>}
+              {l.t === 'run' && <span class="ic ic-run" aria-hidden="true">↻</span>}
+              {l.t === 'sub' && <span class="ic ic-sub" aria-hidden="true">└</span>}
+              <span set:html={l.html} />
+            </div>
+          ))}
+          <div class="ln caret-ln" style={`--i:${lines.length}`}><span class="tok-prompt">$</span> <span class="caret"></span></div>
+        </div>
+
+        <aside class="panel" aria-label="Example deployment status">
+          <div class="panel-head">
+            <span class="status"><span class="pulse"></span>serving</span>
+            <span class="muted mono">qwen-agent · rev 2</span>
+          </div>
+          <div class="stats">
+            <div><span class="k">Time to first token</span><span class="v">58<small>ms p50</small></span></div>
+            <div><span class="k">Throughput</span><span class="v">2,410<small>tok/s</small></span></div>
+            <div><span class="k">Cost</span><span class="v">$0.21<small>/ Mtok</small></span></div>
+            <div><span class="k">Quality gate</span><span class="v ok">0.95<small>passed</small></span></div>
+          </div>
+          <div class="canary">
+            <div class="canary-top"><span>Canary rollout</span><span class="mono muted">rev 2 vs rev 1</span></div>
+            <div class="steps">
+              <span class="st done">10%</span><span class="st done">50%</span><span class="st now">100%</span>
+            </div>
+            <p class="mono muted small">Error rate and latency within limits. Promoted.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="works reveal">
+      <span class="muted">Runs on</span>
+      {['vLLM', 'SGLang', 'llama.cpp', 'MLX'].map((x) => <span class="chip">{x}</span>)}
+      <span class="sep" aria-hidden="true"></span>
+      <span class="muted">Speaks</span>
+      {['OpenAI', 'Anthropic', 'Ollama'].map((x) => <span class="chip">{x} API</span>)}
+    </div>
+  </div>
+</section>
+
+<script>
+  // Replay the terminal each time it scrolls into view.
+  const term = document.querySelector<HTMLElement>('[data-term]');
+  if (term) {
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { term.classList.remove('play'); void term.offsetWidth; term.classList.add('play'); }
+    }, { threshold: 0.35 });
+    io.observe(term);
+  }
+</script>
+
+<style>
+  .hero { position: relative; overflow: hidden; padding: clamp(56px, 9vw, 110px) 0 clamp(64px, 8vw, 100px); }
+  .bg { position: absolute; inset: 0; pointer-events: none; }
+  .grid {
+    position: absolute; inset: -1px;
+    background-image: linear-gradient(var(--line-1) 1px, transparent 1px), linear-gradient(90deg, var(--line-1) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 70% 55% at 50% 30%, #000 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 30%, #000 30%, transparent 75%);
+    opacity: 0.55;
+  }
+  .glow { position: absolute; border-radius: 50%; filter: blur(90px); }
+  .g1 { width: 720px; height: 420px; left: 50%; top: -160px; transform: translateX(-60%); background: radial-gradient(closest-side, rgba(62, 232, 181, 0.24), transparent); }
+  .g2 { width: 620px; height: 380px; left: 50%; top: 40px; transform: translateX(5%); background: radial-gradient(closest-side, rgba(56, 189, 248, 0.16), transparent); }
+  .wave { position: absolute; left: 0; right: 0; top: 640px; width: 100%; height: 200px; opacity: 0.55; }
+  .wave path { stroke-dasharray: 2400; stroke-dashoffset: 2400; animation: draw 3.2s var(--ease-out) 0.3s forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  .hero-inner { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; margin-bottom: 28px;
+    border-radius: 999px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, 0.03);
+    font-size: 13.5px; color: var(--fg-2); transition: border-color 200ms ease, background 200ms ease;
+  }
+  .badge:hover { border-color: rgba(62, 232, 181, 0.45); background: rgba(62, 232, 181, 0.05); }
+  .badge-pill { white-space: nowrap; padding: 3px 10px; border-radius: 999px; background: rgba(62, 232, 181, 0.12); color: var(--mint-400); font-weight: 560; font-size: 12.5px; }
+  .badge .arrow { color: var(--fg-3); transition: transform 200ms var(--ease-out); }
+  .badge:hover .arrow { transform: translateX(3px); color: var(--mint-400); }
+
+  .lede { margin: 26px auto 0; }
+  .cta { display: flex; gap: 12px; margin-top: 34px; flex-wrap: wrap; justify-content: center; }
+
+  .install {
+    margin-top: 22px; display: inline-flex; align-items: center; gap: 12px; padding: 10px 12px 10px 16px;
+    border-radius: 12px; border: 1px solid var(--line-1); background: rgba(5, 7, 10, 0.6); cursor: pointer;
+    font-family: var(--font-mono); font-size: 14px; color: var(--fg-1); transition: border-color 160ms ease;
+  }
+  .install:hover { border-color: var(--line-3); }
+  .install code { font-size: 14px; }
+  .copy-ic { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; background: rgba(255, 255, 255, 0.05); color: var(--fg-3); }
+  .copy-ic .i-ok { display: none; color: var(--mint-400); }
+  .install:global(.copied) .i-copy { display: none; }
+  .install:global(.copied) .i-ok { display: block; }
+
+  /* Product window */
+  .window {
+    width: 100%; max-width: 1080px; margin-top: clamp(48px, 7vw, 76px); text-align: left;
+    border-radius: var(--radius-xl); border: 1px solid var(--line-2);
+    background: linear-gradient(180deg, #11161e, #090c11);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02), 0 40px 120px -30px rgba(0, 0, 0, 0.9), 0 0 120px -40px rgba(62, 232, 181, 0.25);
+    overflow: hidden;
+  }
+  .win-bar { display: flex; align-items: center; gap: 14px; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--line-1); background: rgba(255, 255, 255, 0.015); }
+  .lights { display: flex; gap: 7px; }
+  .lights i { width: 11px; height: 11px; border-radius: 50%; background: #2a313c; }
+  .win-title { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg-3); }
+  .win-note { margin-left: auto; font-size: 11.5px; color: var(--fg-3); border: 1px solid var(--line-1); padding: 2px 8px; border-radius: 999px; }
+  .win-body { display: grid; grid-template-columns: 1.55fr 1fr; }
+  .term { padding: 22px 24px 26px; font-family: var(--font-mono); font-size: 13.2px; line-height: 1.95; color: var(--fg-2); overflow-x: auto; }
+  .ln { display: flex; gap: 10px; white-space: pre; opacity: 0; transform: translateY(4px); }
+  .play .ln { animation: line 420ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 420ms + 200ms); }
+  @keyframes line { to { opacity: 1; transform: none; } }
+  .ln-cmd { color: var(--fg-1); margin-bottom: 4px; }
+  .ln :global(b) { color: var(--fg-1); font-weight: 500; }
+  .ln :global(.dim) { color: var(--fg-3); }
+  .ln :global(.pass) { color: var(--mint-400); }
+  .ln :global(.fail) { color: var(--bad); }
+  .ln :global(.gain) { color: var(--mint-300); }
+  .ic { width: 14px; flex: none; text-align: center; }
+  .ic-ok { color: var(--mint-400); }
+  .ic-live { color: var(--mint-400); text-shadow: 0 0 10px var(--mint-400); }
+  .ic-run { color: var(--sky-400); }
+  .ln-sub { padding-left: 24px; font-size: 12.6px; }
+  .ic-sub { color: var(--fg-3); }
+  .caret { display: inline-block; width: 8px; height: 16px; background: var(--mint-400); vertical-align: -3px; animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .panel { border-left: 1px solid var(--line-1); padding: 20px; display: flex; flex-direction: column; gap: 16px; background: rgba(255, 255, 255, 0.012); }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; }
+  .mono { font-family: var(--font-mono); font-size: 12px; }
+  .status { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; background: rgba(34, 197, 94, 0.1); color: #7ee2a8; font-size: 12.5px; font-weight: 560; }
+  .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); animation: pulse 2s infinite; }
+  @keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stats > div { padding: 12px; border-radius: 12px; border: 1px solid var(--line-1); background: rgba(5, 7, 10, 0.45); display: flex; flex-direction: column; gap: 4px; }
+  .k { font-size: 11.5px; color: var(--fg-3); }
+  .v { font-size: 22px; font-weight: 600; letter-spacing: -0.03em; color: var(--fg-1); }
+  .v small { font-size: 11.5px; font-weight: 500; color: var(--fg-3); margin-left: 4px; letter-spacing: 0; }
+  .v.ok small { color: var(--mint-400); }
+  .canary { padding: 14px; border-radius: 12px; border: 1px solid var(--line-1); background: rgba(5, 7, 10, 0.45); }
+  .canary-top { display: flex; justify-content: space-between; font-size: 13px; color: var(--fg-1); margin-bottom: 10px; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .st { text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 6px 0; border-radius: 8px; background: rgba(255, 255, 255, 0.04); color: var(--fg-3); }
+  .st.done { background: rgba(62, 232, 181, 0.12); color: var(--mint-400); }
+  .st.now { background: var(--mint-400); color: var(--on-mint); font-weight: 600; }
+  .small { margin: 10px 0 0; font-size: 11.5px; }
+
+  .works { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-top: 36px; font-size: 13.5px; }
+  .works .muted { margin: 0 4px; }
+  .sep { width: 1px; height: 18px; background: var(--line-2); margin: 0 8px; }
+
+  @media (max-width: 900px) {
+    .win-body { grid-template-columns: 1fr; }
+    .panel { border-left: 0; border-top: 1px solid var(--line-1); }
+    .term { font-size: 12px; }
+    .win-note { display: none; }
+  }
+  .win-title { white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) { .ln { opacity: 1; transform: none; } }
+</style>

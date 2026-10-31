@@ -1,0 +1,107 @@
+---
+// Hand-tokenized so the snippets render instantly with brand colors and no client-side highlighter.
+const s = (c: string, t: string) => `<span class="tok-${c}">${t}</span>`;
+const snippets = [
+  {
+    id: 'openai', label: 'OpenAI SDK', file: 'app.py',
+    raw: `from openai import OpenAI\n\nclient = OpenAI(base_url="http://localhost:8800/v1", api_key="none")\nreply = client.chat.completions.create(\n    model="qwen-agent",\n    messages=[{"role": "user", "content": "Plan the migration"}],\n    stream=True,\n)`,
+    html: [
+      `${s('key', 'from')} openai ${s('key', 'import')} OpenAI`,
+      ``,
+      `client = ${s('fn', 'OpenAI')}(base_url=${s('str', '"http://localhost:8800/v1"')}, api_key=${s('str', '"none"')})`,
+      `reply = client.chat.completions.${s('fn', 'create')}(`,
+      `    model=${s('str', '"qwen-agent"')},`,
+      `    messages=[{${s('str', '"role"')}: ${s('str', '"user"')}, ${s('str', '"content"')}: ${s('str', '"Plan the migration"')}}],`,
+      `    stream=${s('key', 'True')},`,
+      `)`,
+    ],
+  },
+  {
+    id: 'anthropic', label: 'Anthropic SDK', file: 'agent.py',
+    raw: `import anthropic\n\nclient = anthropic.Anthropic(base_url="http://localhost:8800", api_key="none")\nmsg = client.messages.create(\n    model="qwen-agent",\n    max_tokens=1024,\n    tools=tools,\n    messages=[{"role": "user", "content": "Find the failing test"}],\n)`,
+    html: [
+      `${s('key', 'import')} anthropic`,
+      ``,
+      `client = anthropic.${s('fn', 'Anthropic')}(base_url=${s('str', '"http://localhost:8800"')}, api_key=${s('str', '"none"')})`,
+      `msg = client.messages.${s('fn', 'create')}(`,
+      `    model=${s('str', '"qwen-agent"')},`,
+      `    max_tokens=${s('num', '1024')},`,
+      `    tools=tools,`,
+      `    messages=[{${s('str', '"role"')}: ${s('str', '"user"')}, ${s('str', '"content"')}: ${s('str', '"Find the failing test"')}}],`,
+      `)`,
+    ],
+  },
+  {
+    id: 'curl', label: 'curl', file: 'terminal',
+    raw: `curl http://localhost:8800/v1/chat/completions \\\n  -H "Content-Type: application/json" \\\n  -d '{"model": "qwen-agent", "messages": [{"role": "user", "content": "Hi"}]}'`,
+    html: [
+      `${s('fn', 'curl')} http://localhost:8800/v1/chat/completions \\`,
+      `  -H ${s('str', '"Content-Type: application/json"')} \\`,
+      `  -d ${s('str', `'{"model": "qwen-agent", "messages": [{"role": "user", "content": "Hi"}]}'`)}`,
+    ],
+  },
+  {
+    id: 'ollama', label: 'Ollama API', file: 'terminal',
+    raw: `# Open WebUI, Continue and other Ollama clients can point at Tunyx\ncurl http://localhost:8800/api/chat -d '{"model": "qwen-agent", "messages": [{"role": "user", "content": "Hi"}]}'`,
+    html: [
+      `${s('comment', '# Open WebUI, Continue and other Ollama clients can point at Tunyx')}`,
+      `${s('fn', 'curl')} http://localhost:8800/api/chat \\`,
+      `  -d ${s('str', `'{"model": "qwen-agent", "messages": [{"role": "user", "content": "Hi"}]}'`)}`,
+    ],
+  },
+];
+---
+<section class="section" id="code">
+  <div class="container dev">
+    <div class="intro reveal">
+      <span class="eyebrow">Drop-in</span>
+      <h2 class="h-section">Change one URL. Keep everything else.</h2>
+      <p class="lede">
+        Your apps, agents and tools keep the SDKs they use today. Behind the endpoint, Tunyx routes, queues fairly,
+        canaries and retunes. Your code never knows.
+      </p>
+      <div class="chips">
+        {['Streaming', 'Tool calling', 'JSON schema', 'Reasoning', 'Embeddings', 'LoRA by name', 'LiteLLM', 'Open WebUI'].map((c) => <span class="chip">{c}</span>)}
+      </div>
+    </div>
+
+    <div class="card code reveal" data-tabs>
+      <div class="bar" role="tablist" aria-label="Client examples">
+        {snippets.map((sn, i) => (
+          <button role="tab" id={`ct-${sn.id}`} aria-controls={`cp-${sn.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{sn.label}</button>
+        ))}
+      </div>
+      {snippets.map((sn, i) => (
+        <div class="pane" role="tabpanel" id={`cp-${sn.id}`} aria-labelledby={`ct-${sn.id}`} hidden={i !== 0}>
+          <div class="file"><span>{sn.file}</span>
+            <button class="copy-btn" data-copy={sn.raw} aria-label={`Copy ${sn.label} example`}>
+              <span class="c1">Copy</span><span class="c2">Copied</span>
+            </button>
+          </div>
+          <pre><code>{sn.html.map((l, n) => <span class="line"><span class="no">{n + 1}</span><span set:html={l || ' '} /></span>)}</code></pre>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .dev { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
+  .lede { margin-top: 20px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+  .code { overflow: hidden; background: linear-gradient(180deg, rgba(14, 18, 25, 0.95), rgba(8, 11, 16, 0.98)); }
+  .bar { display: flex; gap: 2px; padding: 8px; border-bottom: 1px solid var(--line-1); overflow-x: auto; }
+  [role='tab'] { border: 0; background: transparent; color: var(--fg-3); font-size: 13.5px; padding: 7px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+  [role='tab']:hover { color: var(--fg-1); }
+  [role='tab'][aria-selected='true'] { background: rgba(255, 255, 255, 0.06); color: var(--fg-1); }
+  .file { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px 0; font-family: var(--font-mono); font-size: 12px; color: var(--fg-3); }
+  .copy-btn { border: 1px solid var(--line-2); background: transparent; color: var(--fg-2); font-size: 12px; padding: 4px 10px; border-radius: 7px; cursor: pointer; }
+  .copy-btn:hover { color: var(--fg-1); border-color: var(--line-3); }
+  .copy-btn .c2 { display: none; color: var(--mint-400); }
+  .copy-btn:global(.copied) .c1 { display: none; }
+  .copy-btn:global(.copied) .c2 { display: inline; }
+  pre { margin: 0; padding: 14px 18px 22px; overflow-x: auto; font-size: 13.4px; line-height: 1.8; color: var(--fg-1); }
+  .line { display: block; white-space: pre; }
+  .no { display: inline-block; width: 22px; color: #3a4352; user-select: none; }
+  @media (max-width: 980px) { .dev { grid-template-columns: 1fr; } }
+</style>

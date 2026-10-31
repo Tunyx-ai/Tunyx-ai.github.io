@@ -1,0 +1,60 @@
+---
+title: Introduction
+description: Tunyx turns your GPUs into fast, quality-checked, OpenAI-compatible endpoints, tuned to your workload and kept healthy automatically.
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+**Tunyx is a self-optimizing inference control plane.** Point it at a model, tell it your workload, and get a
+fast, validated, OpenAI-compatible endpoint on your own hardware that stays healthy.
+
+It sits between your applications and an inference engine (vLLM, SGLang, llama.cpp or MLX). It decides how to
+run the engine for *your* workload, proves the result with benchmarks and a quality gate, and operates it day
+to day.
+
+```bash
+tunyx up qwen2.5:7b --profile agent
+```
+
+## Start here
+
+<CardGrid>
+  <LinkCard title="Quickstart" description="From install to your first request in five minutes." href="/docs/getting-started/quickstart/" />
+  <LinkCard title="Try the demo" description="See the whole product on a simulated GPU. No hardware needed." href="/docs/getting-started/demo/" />
+  <LinkCard title="How Tunyx works" description="The plan, serve, optimize, validate, operate loop." href="/docs/concepts/how-it-works/" />
+  <LinkCard title="Calling your model" description="OpenAI, Anthropic and Ollama clients, with examples." href="/docs/guides/apis/" />
+</CardGrid>
+
+## What you get
+
+<CardGrid>
+  <Card title="Tuned for your workload" icon="rocket">
+    Pick `chat`, `agent`, `batch` or `mixed`. Tunyx benchmarks real configurations on your GPU and keeps the
+    fastest one that meets your latency targets.
+  </Card>
+  <Card title="Quality checked" icon="approve-check">
+    Every configuration must pass accuracy, tool-calling and JSON tests before it serves traffic. Faster but
+    worse is rejected.
+  </Card>
+  <Card title="Safe updates" icon="random">
+    `tunyx swap` moves traffic to a new model gradually and rolls back automatically if anything gets worse.
+  </Card>
+  <Card title="Keeps itself healthy" icon="heart">
+    Crashed engines restart, idle models free the GPU, and settings retune from real traffic.
+  </Card>
+  <Card title="Shows what it costs" icon="information">
+    Cost per million tokens, utilization, idle spend, and comparison with the API price you pay today.
+  </Card>
+  <Card title="Works with your tools" icon="puzzle">
+    OpenAI, Anthropic and Ollama APIs on one endpoint. Existing apps and SDKs work unchanged.
+  </Card>
+</CardGrid>
+
+## Who it's for
+
+- **Teams moving from managed APIs to open models** for cost, privacy or control, without hiring an inference
+  team.
+- **Teams already running vLLM by hand** who want the flag tuning, validation, swaps and on-call work automated.
+- **Teams outgrowing Ollama** who need throughput under concurrency, quality checks and safe updates.
+
+Tunyx manages a single node with up to 8 GPUs, MIG slices, Apple Silicon Macs or CPU servers.

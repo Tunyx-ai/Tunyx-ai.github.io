@@ -1,0 +1,147 @@
+/* Starlight (docs) theme mapped onto the Tunyx tokens. */
+@import './tokens.css';
+
+:root {
+  --sl-font: var(--font-sans);
+  --sl-font-mono: var(--font-mono);
+
+  /* Dark mode */
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #e9edf3;
+  --sl-color-gray-2: #c0c8d4;
+  --sl-color-gray-3: #8792a3;
+  --sl-color-gray-4: #566072;
+  --sl-color-gray-5: #263040;
+  --sl-color-gray-6: #121821;
+  --sl-color-black: #090c11;
+
+  --sl-color-accent-low: #0b3a2c;
+  --sl-color-accent: #2fd6a0;
+  --sl-color-accent-high: #a6f7dc;
+
+  --sl-color-bg-nav: rgba(9, 12, 17, 0.82);
+  --sl-color-bg-sidebar: #090c11;
+  --sl-color-hairline: rgba(160, 175, 200, 0.12);
+  --sl-color-hairline-light: rgba(160, 175, 200, 0.16);
+
+  --sl-content-width: 46rem;
+  --sl-text-h1: 2.5rem;
+}
+
+:root[data-theme='light'] {
+  --sl-color-white: #0b0f15;
+  --sl-color-gray-1: #18202b;
+  --sl-color-gray-2: #2c3644;
+  --sl-color-gray-3: #4f5a6b;
+  --sl-color-gray-4: #7d8798;
+  --sl-color-gray-5: #c9d0da;
+  --sl-color-gray-6: #eef1f5;
+  --sl-color-gray-7: #f6f8fa;
+  --sl-color-black: #ffffff;
+
+  --sl-color-accent-low: #d3f7ea;
+  --sl-color-accent: #087a5a;
+  --sl-color-accent-high: #064d39;
+
+  --sl-color-bg-nav: rgba(255, 255, 255, 0.85);
+  --sl-color-bg-sidebar: #fbfcfd;
+  --sl-color-hairline: #e6eaf0;
+  --sl-color-hairline-light: #edf0f4;
+}
+
+/* Header: frosted glass, hairline bottom */
+header.header {
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+}
+
+.site-title {
+  font-weight: 640;
+  letter-spacing: -0.04em;
+  font-size: 1.15rem;
+  color: var(--sl-color-white);
+}
+
+/* Headings: tighter, more confident */
+.sl-markdown-content :is(h1, h2, h3, h4) {
+  letter-spacing: -0.025em;
+  font-weight: 620;
+}
+h1#_top {
+  letter-spacing: -0.035em;
+  font-weight: 650;
+}
+
+/* Sidebar: quieter group labels, pill for the current page */
+.sidebar-content .group-label .large {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sl-color-gray-3);
+  font-weight: 600;
+}
+.sidebar-content a[aria-current='page'] {
+  background: var(--sl-color-accent-low);
+  color: var(--sl-color-accent-high);
+  font-weight: 560;
+  border-radius: 8px;
+}
+:root[data-theme='light'] .sidebar-content a[aria-current='page'] {
+  color: var(--sl-color-accent-high);
+}
+
+/* Inline code */
+.sl-markdown-content :not(pre) > code {
+  border-radius: 6px;
+  padding: 0.12em 0.4em;
+  font-size: 0.88em;
+  border: 1px solid var(--sl-color-hairline);
+}
+
+/* Cards and link cards */
+.sl-markdown-content .card,
+.sl-markdown-content .sl-link-card {
+  border-radius: 14px;
+  border-color: var(--sl-color-hairline-light);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+.sl-markdown-content .sl-link-card:hover {
+  border-color: var(--sl-color-accent);
+  transform: translateY(-1px);
+}
+
+/* Tables */
+.sl-markdown-content table {
+  font-size: 0.92rem;
+}
+.sl-markdown-content th {
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+
+/* Code frames */
+.expressive-code .frame {
+  border-radius: 12px !important;
+}
+
+/* Brand the hues Starlight uses for asides and badges: tip = mint, note = sky */
+:root {
+  --sl-color-purple-low: #0b3a2c;
+  --sl-color-purple: #2fd6a0;
+  --sl-color-purple-high: #a6f7dc;
+  --sl-color-blue-low: #0b2c40;
+  --sl-color-blue: #38bdf8;
+  --sl-color-blue-high: #b8e6fd;
+}
+:root[data-theme='light'] {
+  --sl-color-purple-low: #e3faf1;
+  --sl-color-purple: #0b8a63;
+  --sl-color-purple-high: #065c43;
+  --sl-color-blue-low: #e4f4fd;
+  --sl-color-blue: #0284c7;
+  --sl-color-blue-high: #075985;
+}
+.starlight-aside { border-radius: 0 12px 12px 0; }
+
+/* Logo: a compact mark next to the wordmark */
+.site-title img { height: 1.75rem; width: auto; }

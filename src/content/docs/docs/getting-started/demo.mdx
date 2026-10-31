@@ -1,0 +1,51 @@
+---
+title: Try the demo
+description: See Tunyx end to end in about a minute on a simulated GPU, no hardware needed.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+`tunyx demo` runs the real Tunyx control plane against a simulated H100 and a simulated engine. Everything you
+see (planning, optimization, the quality gate, canary and rollback) is the same code that runs on real GPUs.
+
+```bash
+pip install git+https://github.com/Tunyx-ai/tunyx
+tunyx demo
+```
+
+## What the demo shows
+
+<Steps>
+
+1. **Serve.** Starts an isolated Tunyx daemon on port 8799 with its own data directory, so it never touches a
+   real installation.
+
+2. **Plan.** Shows what Tunyx would deploy on an H100 and why: engine, precision, context length and memory.
+
+3. **Deploy and optimize.** Deploys a model with the `agent` profile. It serves first, then optimizes.
+
+4. **Benchmark.** Runs a workload-shaped benchmark against the endpoint.
+
+5. **Catch a bad update.** Swaps to a broken 4-bit build. The quality gate catches broken tool calls, the swap
+   is rejected and the original keeps serving, with no user-visible failure.
+
+6. **Economics.** Sets an API reference price and shows cost per million tokens and savings.
+
+</Steps>
+
+When it finishes, open the dashboard at **http://127.0.0.1:8799** or try a request:
+
+```bash
+curl http://127.0.0.1:8799/v1/chat/completions -H 'Content-Type: application/json' \
+  -d '{"model": "acme", "messages": [{"role": "user", "content": "hi"}]}'
+```
+
+Clean up with:
+
+```bash
+tunyx demo --stop
+```
+
+<Aside type="note">
+  Use `tunyx demo --fast` for a shorter run, and `--port` to pick a different port.
+</Aside>

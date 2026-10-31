@@ -1,0 +1,40 @@
+<!doctype html>
+<!-- Source for public/og.png (1200x630 link preview). Re-render with scripts/render-og.sh. -->
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  @font-face { font-family: Geist; src: url('../node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; }
+  @font-face { font-family: GeistMono; src: url('../node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; }
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background: #080b10; color: #eef1f6; font-family: Geist, sans-serif; position: relative;
+    background-image: radial-gradient(600px 360px at 18% 0%, rgba(62,232,181,.20), transparent 70%), radial-gradient(520px 340px at 90% 110%, rgba(56,189,248,.16), transparent 70%);
+  }
+  .grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(160,175,200,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(160,175,200,.07) 1px, transparent 1px); background-size: 60px 60px; mask-image: linear-gradient(90deg, #000, transparent 85%); }
+  .wrap { position: absolute; inset: 72px 80px; display: flex; flex-direction: column; }
+  .brand { display: flex; align-items: center; gap: 16px; font-size: 34px; font-weight: 640; letter-spacing: -0.04em; }
+  h1 { margin: 64px 0 0; font-size: 92px; line-height: .98; letter-spacing: -0.05em; font-weight: 650; }
+  .g { background: linear-gradient(100deg, #3ee8b5, #3fd8d0 45%, #38bdf8); -webkit-background-clip: text; color: transparent; }
+  p { margin: 30px 0 0; font-size: 28px; color: #a9b2c1; letter-spacing: -0.01em; max-width: 820px; line-height: 1.4; }
+  .foot { margin-top: auto; display: flex; gap: 12px; font-family: GeistMono, monospace; font-size: 20px; color: #a9b2c1; }
+  .chip { padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(160,175,200,.2); background: rgba(255,255,255,.03); }
+  .chip.on { color: #3ee8b5; border-color: rgba(62,232,181,.4); background: rgba(62,232,181,.08); }
+  svg.wave { position: absolute; right: -40px; top: 120px; width: 520px; opacity: .55; }
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+  <svg class="wave" viewBox="0 0 520 200" fill="none"><defs><linearGradient id="w" x1="0" x2="1"><stop stop-color="#3EE8B5"/><stop offset="1" stop-color="#38BDF8" stop-opacity=".2"/></linearGradient></defs>
+    <path d="M0 100 C 40 10, 80 10, 120 100 S 200 170, 240 100 S 300 50, 340 100 S 400 125, 430 100 S 480 92, 520 100" stroke="url(#w)" stroke-width="3"/></svg>
+  <div class="wrap">
+    <div class="brand">
+      <svg width="52" height="52" viewBox="0 0 32 32" fill="none"><defs><linearGradient id="g" x1="4" y1="8" x2="28" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#3EE8B5"/><stop offset="1" stop-color="#38BDF8"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="#0B0F15"/><rect x=".5" y=".5" width="31" height="31" rx="7.5" stroke="#fff" stroke-opacity=".14"/><path d="M5 16c1.6-9 3.4-9 5 0s3.2 7 4.6 0 2.8-4.6 4 0 2.4 2.6 3.4 0 2-1.2 2.8 0 1.4.4 2.2 0" stroke="url(#g)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      tunyx
+    </div>
+    <h1>Inference that<br /><span class="g">tunes itself.</span></h1>
+    <p>Fast, quality-checked, OpenAI-compatible endpoints on your own GPUs, tuned to your workload and kept healthy.</p>
+    <div class="foot"><span class="chip on">tunyx up qwen2.5:7b</span><span class="chip">vLLM · SGLang · llama.cpp · MLX</span></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,85 @@
+---
+title: Teams, keys & security
+description: API keys, roles, scopes, rate limits, HTTPS, policy, audit and four-eyes approval.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+By default Tunyx listens on localhost only and needs no key. To serve a team:
+
+```bash
+export TUNYX_HOST=0.0.0.0
+export TUNYX_API_KEYS="team-a:sk-aaa,team-b:sk-bbb"     # named keys: usage and cost per team
+export TUNYX_ADMIN_KEYS="sk-admin"                       # may change deployments
+export TUNYX_VIEWER_KEYS="sk-view"                       # read-only: dashboard and metrics
+export TUNYX_KEY_SCOPES="team-a=chat,coder;team-b=*"     # deployments each team may use
+export TUNYX_KEY_LIMITS="team-a:rpm=60,tpm=200000,concurrency=8;*:rpm=600"
+tunyx serve --detach
+```
+
+<Aside type="caution">
+  If you bind beyond localhost without keys, Tunyx generates one rather than running open.
+</Aside>
+
+Clients send `Authorization: Bearer KEY`, or `x-api-key` for Anthropic SDKs. Keys are never accepted in URLs.
+
+## Roles
+
+| Role | Can |
+|---|---|
+| Inference (`TUNYX_API_KEYS`) | Call models within their scopes |
+| Admin (`TUNYX_ADMIN_KEYS`) | Create, change and delete deployments; settings |
+| Viewer (`TUNYX_VIEWER_KEYS`) | Dashboard, `/metrics` and read-only API |
+
+If no admin keys are set, API keys act as admin keys.
+
+## Fair queueing and limits
+
+When a deployment is busy, the team with the shortest queue goes first, so one heavy user can't starve the
+others. Per-team limits return 429 with `Retry-After`.
+
+## HTTPS and mutual TLS
+
+```bash
+export TUNYX_TLS_CERT=/etc/tunyx/cert.pem
+export TUNYX_TLS_KEY=/etc/tunyx/key.pem
+export TUNYX_TLS_CLIENT_CA=/etc/tunyx/clients-ca.pem   # optional: require client certificates
+```
+
+## Policy
+
+| Setting | Effect |
+|---|---|
+| `TUNYX_ALLOWED_MODELS="Qwen/*,meta-llama/*"` | Only matching models can be deployed |
+| `TUNYX_MODEL_ROOTS=/models` | Local model paths must live under these directories |
+| `TUNYX_DENY_REMOTE_CODE=1` | Refuse `--trust-remote-code` |
+| `TUNYX_DENY_PICKLE=1` | Refuse pickle (`.bin`) weights |
+| `TUNYX_REQUIRE_PINNED_REVISION=1` | Require Hugging Face commit pins |
+| `TUNYX_MAX_MEMORY_FRACTION=0.5` | Cap the GPU share of any one deployment |
+| `TUNYX_MAX_TOKENS=4096` | Cap `max_tokens` per request |
+
+## Four-eyes approval
+
+With `TUNYX_REQUIRE_APPROVAL=1`, every change becomes a request that a *different* admin must approve:
+
+```bash
+tunyx changes list            # pending requests
+tunyx changes approve ID
+```
+
+## Audit log
+
+Every change and denied access is recorded in a hash-chained, tamper-evident log.
+
+```bash
+tunyx audit --since-hours 72
+tunyx audit --verify          # check the chain's integrity
+tunyx audit --csv audit.csv
+```
+
+Stream it to a SIEM with `TUNYX_AUDIT_LOG=/var/log/tunyx/audit.jsonl`.
+
+## Privacy
+
+Tunyx runs entirely on your infrastructure and works air-gapped. Prompts and outputs are not stored in Tunyx's
+database; access logs (`TUNYX_ACCESS_LOG=1`) record metadata only.

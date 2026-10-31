@@ -1,0 +1,63 @@
+---
+title: How Tunyx works
+description: The plan, serve, optimize, validate and operate loop behind every deployment.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Tunyx is a **control plane**, not an engine. It sits between your applications and an inference engine (vLLM,
+SGLang, llama.cpp or MLX) and does the work an experienced inference engineer would: choose settings, measure
+them, check quality, roll changes out safely and keep everything running.
+
+```txt
+plan ─► download ─► serve the safest config ─► optimize in the background ─► promote only what passes
+                                                                                      │
+                     retune from real traffic ◄─ monitor ◄─ serve (one stable endpoint) ◄┘
+```
+
+<Steps>
+
+1. **Plan.** Detects your hardware (GPUs, MIG slices, Apple Silicon, ROCm, `CUDA_VISIBLE_DEVICES`, busy GPUs)
+   and reads the model's configuration without downloading weights. Then it picks the engine, precision,
+   tensor-parallel layout, replicas and context length. Context is derived from the memory left after weights,
+   never guessed. Run `tunyx plan MODEL` to see the plan and reasons without launching anything.
+
+2. **Serve first.** Starts the highest-fidelity configuration that fits, validates it and opens the endpoint, in
+   one model load.
+
+3. **Optimize.** In the background, benchmarks faster candidates against your
+   [workload profile](/docs/concepts/profiles/). On multi-GPU machines, candidates run in parallel, one per GPU.
+
+4. **Validate.** Each candidate must meet the profile's latency targets and pass the
+   [quality gate](/docs/concepts/quality-gates/).
+
+5. **Promote or fall back.** The winner replaces the current config only if it's at least 5% better and
+   statistically ahead, not just ahead by noise. If nothing passes, Tunyx keeps a conservative safe config and
+   tells you why.
+
+6. **Operate.** Restarts crashed engines, puts idle models to sleep, rolls out updates with canary and
+   automatic rollback, and proposes retunes as traffic changes.
+
+</Steps>
+
+## One stable endpoint
+
+Applications always call the same URL. Behind it, the gateway:
+
+- resolves the model name to a deployment;
+- applies fair admission control: the team with the shortest queue goes first;
+- routes to the least-busy healthy replica, with session affinity for agent workloads;
+- splits traffic during canaries;
+- holds requests briefly while a crashed engine restarts or a sleeping model wakes;
+- records latency, tokens and cost for every request.
+
+## Revisions
+
+Every configuration Tunyx serves is a numbered **revision**. Swaps, retunes and re-optimizations create new
+revisions; rollbacks return to earlier ones. `tunyx status NAME` shows the history with the outcome of each.
+
+## Crash-safe state
+
+Tunyx keeps its state in a local SQLite database (WAL mode) with hourly backups. If the daemon restarts, it
+re-attaches to engines that are still running, after verifying their identity, or relaunches the last good
+revision.

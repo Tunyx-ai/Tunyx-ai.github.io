@@ -1,0 +1,123 @@
+---
+const inputs = [
+  { id: 'price', label: 'GPU price', unit: '$/GPU-hour', min: 0.5, max: 8, step: 0.1, value: 2.5, fmt: 'usd' },
+  { id: 'gpus', label: 'GPUs', unit: '', min: 1, max: 8, step: 1, value: 1, fmt: 'int' },
+  { id: 'tps', label: 'Validated throughput', unit: 'tok/s per GPU', min: 200, max: 6000, step: 50, value: 2400, fmt: 'int' },
+  { id: 'util', label: 'Average utilization', unit: '% of capacity', min: 5, max: 100, step: 1, value: 60, fmt: 'pct' },
+  { id: 'api', label: 'Your API price', unit: '$/M tokens', min: 0.05, max: 15, step: 0.05, value: 0.6, fmt: 'usd' },
+];
+---
+<section class="section" id="economics">
+  <div class="container econ">
+    <div class="intro reveal">
+      <span class="eyebrow">Economics</span>
+      <h2 class="h-section">Know what a million tokens really costs you.</h2>
+      <p class="lede">
+        Tunyx reports cost per million tokens from your live traffic, with idle spend and a comparison with the API
+        price you pay today. Try the math with your own numbers.
+      </p>
+      <ul class="bul">
+        <li>A list-price estimate for your GPU from day one, replaced by your real price with one command</li>
+        <li>Utilization against <em>validated</em> capacity, so “leaving 55% on the table” is a measured number</li>
+        <li>Per-team usage and cost, ready for chargeback</li>
+      </ul>
+    </div>
+
+    <div class="card calc reveal" data-calc>
+      <div class="fields">
+        {inputs.map((f) => (
+          <label class="field">
+            <span class="lab"><span>{f.label}</span><output data-out={f.id}></output></span>
+            <input type="range" name={f.id} min={f.min} max={f.max} step={f.step} value={f.value} data-fmt={f.fmt} aria-describedby={`u-${f.id}`} />
+            <span class="unit" id={`u-${f.id}`}>{f.unit}</span>
+          </label>
+        ))}
+      </div>
+      <div class="results" aria-live="polite">
+        <div class="r main"><span class="rk">Self-hosted cost</span><span class="rv" data-r="cost"></span><span class="ru">per million tokens</span></div>
+        <div class="r"><span class="rk">vs your API</span><span class="rv sm" data-r="save"></span></div>
+        <div class="r"><span class="rk">Tokens per month</span><span class="rv sm" data-r="tok"></span></div>
+        <div class="r"><span class="rk">GPU spend per month</span><span class="rv sm" data-r="spend"></span></div>
+        <div class="r"><span class="rk">Break-even utilization</span><span class="rv sm" data-r="be"></span></div>
+      </div>
+      <p class="fine">Simple model: GPU-hours × price ÷ tokens served. Tunyx uses your measured capacity and real traffic instead.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-calc]');
+  if (root) {
+    const get = (n: string) => Number(root.querySelector<HTMLInputElement>(`input[name="${n}"]`)!.value);
+    const usd = (n: number, d = 2) => `$${n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
+    const compact = (n: number) => Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+    const set = (k: string, v: string, cls = '') => {
+      const el = root.querySelector<HTMLElement>(`[data-r="${k}"]`)!;
+      el.textContent = v;
+      el.classList.toggle('good', cls === 'good');
+      el.classList.toggle('bad', cls === 'bad');
+    };
+
+    function update() {
+      root!.querySelectorAll<HTMLInputElement>('input[type=range]').forEach((i) => {
+        const v = Number(i.value);
+        const out = root!.querySelector<HTMLOutputElement>(`[data-out="${i.name}"]`)!;
+        out.textContent = i.dataset.fmt === 'usd' ? usd(v) : i.dataset.fmt === 'pct' ? `${v}%` : v.toLocaleString('en-US');
+        const p = ((v - Number(i.min)) / (Number(i.max) - Number(i.min))) * 100;
+        i.style.setProperty('--p', `${p}%`);
+      });
+      const price = get('price'), gpus = get('gpus'), tps = get('tps'), util = get('util') / 100, api = get('api');
+      const hours = 730;
+      const spend = price * gpus * hours;
+      const tokens = tps * gpus * util * 3600 * hours;
+      const cost = spend / (tokens / 1e6);
+      const be = Math.min(1, price / (tps * 3600 / 1e6 * api));
+      set('cost', usd(cost, cost < 10 ? 3 : 2));
+      const diff = 1 - cost / api;
+      set('save', diff >= 0 ? `${Math.round(diff * 100)}% cheaper` : `${Math.round(-diff * 100)}% more expensive`, diff >= 0 ? 'good' : 'bad');
+      set('tok', compact(tokens));
+      set('spend', usd(spend, 0));
+      set('be', be >= 1 ? 'API is cheaper at any load' : `${Math.max(1, Math.round(be * 100))}% of capacity`);
+    }
+    root.addEventListener('input', update);
+    update();
+  }
+</script>
+
+<style>
+  .econ { display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
+  .lede { margin-top: 20px; }
+  .bul { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 12px; }
+  .bul li { position: relative; padding-left: 26px; color: var(--fg-2); font-size: 15px; }
+  .bul li::before { content: ''; position: absolute; left: 4px; top: 9px; width: 8px; height: 8px; border-radius: 2px; background: var(--mint-400); box-shadow: 0 0 10px rgba(62, 232, 181, 0.6); }
+  .bul em { color: var(--fg-1); font-style: normal; }
+
+  .calc { padding: 26px; display: grid; gap: 22px; }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 22px; }
+  .field { display: grid; gap: 8px; }
+  .field:last-child { grid-column: 1 / -1; }
+  .lab { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--fg-2); }
+  output { font-family: var(--font-mono); color: var(--fg-1); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .unit { font-size: 11.5px; color: var(--fg-3); margin-top: -2px; }
+  input[type='range'] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; cursor: pointer; }
+  input[type='range']::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(90deg, var(--mint-400) var(--p, 50%), rgba(255, 255, 255, 0.1) var(--p, 50%)); }
+  input[type='range']::-moz-range-track { height: 4px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); }
+  input[type='range']::-moz-range-progress { height: 4px; border-radius: 4px; background: var(--mint-400); }
+  input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -7px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 0 0 4px rgba(62, 232, 181, 0.25), 0 2px 8px rgba(0, 0, 0, 0.5); }
+  input[type='range']::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 0 0 4px rgba(62, 232, 181, 0.25); }
+  input[type='range']:focus-visible { outline: none; }
+  input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(62, 232, 181, 0.6); }
+
+  .results { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 10px; }
+  .r { padding: 14px; border-radius: 12px; border: 1px solid var(--line-1); background: rgba(5, 7, 10, 0.5); display: flex; flex-direction: column; gap: 4px; }
+  .r.main { grid-row: span 2; justify-content: center; background: linear-gradient(160deg, rgba(62, 232, 181, 0.1), rgba(5, 7, 10, 0.5) 60%); border-color: rgba(62, 232, 181, 0.25); }
+  .rk { font-size: 12px; color: var(--fg-3); }
+  .rv { font-size: 38px; font-weight: 630; letter-spacing: -0.04em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .rv.sm { font-size: 17px; letter-spacing: -0.02em; font-weight: 600; }
+  .rv.good { color: var(--mint-400); }
+  .rv.bad { color: #ff9c9c; }
+  .ru { font-size: 12.5px; color: var(--fg-3); }
+  .fine { margin: 0; font-size: 12px; color: var(--fg-3); }
+  @media (max-width: 980px) { .econ { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .fields, .results { grid-template-columns: 1fr; } .r.main { grid-row: auto; } }
+</style>

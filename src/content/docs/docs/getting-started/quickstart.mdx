@@ -1,0 +1,130 @@
+---
+title: Quickstart
+description: Install Tunyx, deploy a model and send your first request in about five minutes.
+---
+
+import { Steps, Tabs, TabItem, Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+This guide takes you from nothing to a tuned, quality-checked endpoint you can call from any OpenAI client.
+
+<Aside type="tip" title="No GPU?">
+  Skip to [Try the demo](/docs/getting-started/demo/). It runs the whole product on a simulated GPU in about a
+  minute.
+</Aside>
+
+## Prerequisites
+
+- Python **3.10 or newer** on Linux or macOS
+- An NVIDIA GPU with drivers installed, an Apple Silicon Mac, or a CPU server for small models
+
+## Deploy your first model
+
+<Steps>
+
+1. **Install Tunyx.**
+
+   ```bash
+   pip install git+https://github.com/Tunyx-ai/tunyx
+   ```
+
+   During the private beta the repository is invite-only. Ask us for access if the install fails with a
+   permission error.
+
+2. **Install an engine.** Tunyx drives a proven inference engine for you. Install the one for your hardware:
+
+   <Tabs syncKey="hw">
+     <TabItem label="NVIDIA GPU">
+       ```bash
+       pip install vllm
+       ```
+     </TabItem>
+     <TabItem label="Apple Silicon">
+       ```bash
+       brew install llama.cpp      # or: pip install mlx-lm
+       ```
+     </TabItem>
+     <TabItem label="CPU only">
+       ```bash
+       brew install llama.cpp      # or a release from github.com/ggml-org/llama.cpp
+       ```
+     </TabItem>
+   </Tabs>
+
+3. **Check your setup.**
+
+   ```bash
+   tunyx doctor
+   ```
+
+   `doctor` checks GPUs, drivers, engines, disk space and network access, and tells you how to fix anything it
+   finds.
+
+4. **Deploy a model.**
+
+   ```bash
+   tunyx up qwen2.5:7b --profile chat
+   ```
+
+   Tunyx detects your hardware, plans a configuration, starts the model, runs the quality gate and opens the
+   endpoint. You'll see something like:
+
+   ```txt
+   Qwen2ForCausalLM, 7.6B params, 15.2 GB weights
+   Serving first: vllm tp=1 ctx=32768 (highest fidelity) as soon as it validates
+   ✓ qwen2.5-7b is serving — ready in 41s
+   ```
+
+   The endpoint is live now. Optimization keeps running in the background and swaps in a faster config only if
+   it's clearly better and passes the same checks.
+
+5. **Send a request.**
+
+   <Tabs syncKey="client">
+     <TabItem label="Python (OpenAI)">
+       ```python
+       from openai import OpenAI
+
+       client = OpenAI(base_url="http://127.0.0.1:8800/v1", api_key="none")
+       reply = client.chat.completions.create(
+           model="qwen2.5-7b",
+           messages=[{"role": "user", "content": "Write a haiku about GPUs"}],
+       )
+       print(reply.choices[0].message.content)
+       ```
+     </TabItem>
+     <TabItem label="curl">
+       ```bash
+       curl http://127.0.0.1:8800/v1/chat/completions \
+         -H 'Content-Type: application/json' \
+         -d '{"model": "qwen2.5-7b", "messages": [{"role": "user", "content": "Hi"}]}'
+       ```
+     </TabItem>
+     <TabItem label="Terminal chat">
+       ```bash
+       tunyx run qwen2.5:7b
+       ```
+     </TabItem>
+   </Tabs>
+
+   The model name is the deployment name that `tunyx up` printed (by default derived from the model, e.g.
+   `qwen2.5-7b`). Choose your own with `--name`.
+
+6. **See what happened.**
+
+   ```bash
+   tunyx status qwen2.5-7b
+   ```
+
+   You get the active config and why it was chosen, benchmark results, the quality score, cost per million
+   tokens and revision history. Or open the dashboard at **http://127.0.0.1:8800**.
+
+</Steps>
+
+## Next steps
+
+<CardGrid>
+  <LinkCard title="Pick the right workload profile" description="chat, agent, batch or mixed: what each one optimizes for." href="/docs/concepts/profiles/" />
+  <LinkCard title="Connect your app" description="OpenAI, Anthropic and Ollama clients, streaming and tools." href="/docs/guides/apis/" />
+  <LinkCard title="Update models safely" description="Swap with canary and automatic rollback." href="/docs/guides/swap-rollback/" />
+  <LinkCard title="Serve your team" description="API keys, scopes, limits and HTTPS." href="/docs/guides/teams-security/" />
+</CardGrid>

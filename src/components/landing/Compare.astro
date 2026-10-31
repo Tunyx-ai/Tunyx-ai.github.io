@@ -1,0 +1,72 @@
+---
+type V = 'yes' | 'part' | 'no';
+const cols = ['Tunyx', 'Ollama', 'vLLM / SGLang by hand', 'NVIDIA NIM / Dynamo', 'Managed APIs'];
+const rows: { k: string; v: [V, string][] }[] = [
+  { k: 'Picks engine, precision, context and batch size for your hardware', v: [['yes', 'Explained'], ['no', 'Fixed defaults'], ['no', 'You do it'], ['part', 'Curated profiles'], ['part', 'Provider does it']] },
+  { k: 'Tunes against your workload’s latency targets', v: [['yes', 'Measured'], ['no', ''], ['no', 'Manual sweeps'], ['part', 'Multi-node planner'], ['part', 'Opaque']] },
+  { k: 'Quality gate before promoting a quantized or changed config', v: [['yes', 'Tools, JSON, reasoning'], ['no', ''], ['no', ''], ['no', ''], ['part', 'Opaque']] },
+  { k: 'Canary rollouts with automatic rollback', v: [['yes', ''], ['no', ''], ['no', ''], ['part', 'Via your platform'], ['part', 'Per provider']] },
+  { k: 'Live retuning from real traffic', v: [['yes', 'Propose or auto'], ['no', ''], ['no', ''], ['part', 'Autoscaling'], ['part', 'n/a']] },
+  { k: 'Throughput under concurrency', v: [['yes', 'Engine-grade'], ['part', 'Single-user oriented'], ['yes', ''], ['yes', ''], ['yes', '']] },
+  { k: 'Cost per token vs your API price', v: [['yes', ''], ['no', ''], ['no', ''], ['no', ''], ['part', 'It is the bill']] },
+  { k: 'OpenAI + Anthropic + Ollama APIs on one endpoint', v: [['yes', ''], ['part', 'Ollama + OpenAI'], ['part', 'OpenAI'], ['part', 'OpenAI'], ['part', 'OpenAI']] },
+  { k: 'Data stays on your hardware', v: [['yes', 'Air-gap ready'], ['yes', ''], ['yes', ''], ['yes', ''], ['no', '']] },
+  { k: 'Multi-node, disaggregated serving', v: [['no', 'Single node, 1–8 GPUs'], ['no', ''], ['part', 'Building blocks'], ['yes', ''], ['yes', '']] },
+];
+const label = { yes: 'Yes', part: 'Partly', no: 'No' };
+---
+<section class="section" id="compare">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Compare</span>
+      <h2 class="h-section">A control plane, not another engine.</h2>
+      <p class="lede">Tunyx runs the best open engines for you. The question isn’t “Tunyx or vLLM”, it’s who does the tuning, validation and day-2 operations around them.</p>
+    </div>
+    <div class="card wrap reveal">
+      <table>
+        <thead>
+          <tr><th scope="col"><span class="sr-only">Capability</span></th>{cols.map((c, i) => <th scope="col" class={i === 0 ? 'us' : ''}>{c}</th>)}</tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <th scope="row">{r.k}</th>
+              {r.v.map(([v, note], i) => (
+                <td class={i === 0 ? 'us' : ''}>
+                  <span class={`mark ${v}`}>
+                    {v === 'yes' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>}
+                    {v === 'part' && <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>}
+                    {v === 'no' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 12h12"/></svg>}
+                    <span class="sr-only">{label[v]}</span>
+                  </span>
+                  {note && <span class="note">{note}</span>}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="honest reveal">Honest limits: Tunyx targets single nodes today, where most self-hosted inference runs. For frontier-scale multi-node serving, use NVIDIA Dynamo or llm-d. Multi-node is on our roadmap.</p>
+  </div>
+</section>
+
+<style>
+  .wrap { overflow-x: auto; padding: 6px; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 880px; font-size: 14px; }
+  th, td { padding: 14px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line-1); }
+  tbody tr:last-child > * { border-bottom: 0; }
+  thead th { font-size: 13px; font-weight: 600; color: var(--fg-2); padding-top: 18px; padding-bottom: 16px; }
+  thead th.us { color: var(--fg-1); }
+  tbody th { font-weight: 500; color: var(--fg-1); width: 30%; }
+  td { color: var(--fg-2); }
+  .us { background: rgba(62, 232, 181, 0.045); }
+  thead .us { border-radius: 12px 12px 0 0; box-shadow: inset 0 1px 0 rgba(62, 232, 181, 0.35); }
+  tbody tr:last-child .us { border-radius: 0 0 12px 12px; }
+  .mark { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 7px; vertical-align: middle; }
+  .mark.yes { color: var(--mint-400); background: rgba(62, 232, 181, 0.12); }
+  .mark.part { color: var(--fg-2); background: rgba(255, 255, 255, 0.06); }
+  .mark.no { color: var(--fg-3); background: transparent; }
+  .note { display: block; margin-top: 6px; font-size: 12.5px; color: var(--fg-3); }
+  .honest { margin: 18px 0 0; font-size: 13.5px; color: var(--fg-3); max-width: 820px; }
+</style>

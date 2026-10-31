@@ -1,0 +1,225 @@
+---
+// Illustrative curve shape (labelled as such on the page). Tunyx measures the real one on your hardware.
+const conc = [1, 2, 4, 8, 16, 32];
+const stock = [96, 182, 334, 560, 718, 690];
+const tuned = [108, 214, 418, 773, 1118, 1236];
+
+const W = 560, H = 300, pl = 52, pr = 92, pt = 18, pb = 40;
+const yMax = 1400;
+const x = (i: number) => pl + (i / (conc.length - 1)) * (W - pl - pr);
+const y = (v: number) => pt + (1 - v / yMax) * (H - pt - pb);
+const path = (vals: number[]) => vals.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+const yTicks = [0, 350, 700, 1050, 1400];
+const data = JSON.stringify({ conc, stock, tuned });
+
+const facts = [
+  { v: '~0.2 ms', k: 'median latency the gateway adds', note: 'measured on a 6-CPU host' },
+  { v: '68', k: 'quality checks before any config serves', note: 'reasoning · tools · JSON · code' },
+  { v: '10 → 50 → 100%', k: 'canary steps, with automatic rollback', note: 'error rate and latency compared live' },
+  { v: '4 APIs', k: 'on one endpoint', note: 'OpenAI · Responses · Anthropic · Ollama' },
+];
+---
+<section class="section" id="proof">
+  <div class="container proof">
+    <div class="intro reveal">
+      <span class="eyebrow">Proof, not claims</span>
+      <h2 class="h-section">See exactly what tuning bought you.</h2>
+      <p class="lede">
+        Tunyx also benchmarks the engine’s stock defaults on the same GPU, model and workload. So the gain is
+        measured, not marketed, and it’s printed right in your status.
+      </p>
+      <div class="status-mock" aria-label="Example status output">
+        <div><span class="m">$</span> tunyx status qwen-agent</div>
+        <div class="dim">Active rev 2: vllm fp8 tp=1 ctx=32768 seqs=128 spec=ngram</div>
+        <div>Tuned config vs stock engine defaults on this workload: <b>+38% goodput</b></div>
+        <div class="dim">Quality 0.95 (reference 0.96) · TTFT p50 58 ms · $0.21/Mtok</div>
+      </div>
+    </div>
+
+    <figure class="card chart reveal" data-chart={data}>
+      <figcaption>
+        <div>
+          <h3>Goodput vs concurrent users</h3>
+          <p class="sub">Tokens/s from requests that met the agent profile’s latency targets</p>
+        </div>
+        <button class="tbl-toggle" type="button" aria-pressed="false" data-table-toggle>Table</button>
+      </figcaption>
+      <ul class="legend" aria-label="Legend">
+        <li><svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" stroke="var(--series-tuned)" stroke-width="2.5" stroke-linecap="round" /></svg>Tuned by Tunyx</li>
+        <li><svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" stroke="var(--series-stock)" stroke-width="2" stroke-dasharray="4 3" stroke-linecap="round" /></svg>Stock engine defaults</li>
+      </ul>
+      <div class="plot" data-plot>
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Line chart: tuned config delivers more goodput than stock defaults at every concurrency level, 773 vs 560 tokens per second at 8 users.">
+          {yTicks.map((t) => (
+            <g>
+              <line x1={pl} x2={W - pr} y1={y(t)} y2={y(t)} class={t === 0 ? 'axis' : 'grid'} />
+              <text x={pl - 10} y={y(t) + 4} class="tick" text-anchor="end">{t.toLocaleString('en-US')}</text>
+            </g>
+          ))}
+          {conc.map((c, i) => <text x={x(i)} y={H - pb + 22} class="tick" text-anchor="middle">{c}</text>)}
+          <text x={(pl + W - pr) / 2} y={H - 2} class="axis-title" text-anchor="middle">concurrent users</text>
+          <path d={path(stock)} class="ln stock" />
+          <path d={path(tuned)} class="ln tuned" />
+          {tuned.map((v, i) => <circle cx={x(i)} cy={y(v)} r="4" class="pt tuned-pt" />)}
+          {stock.map((v, i) => <circle cx={x(i)} cy={y(v)} r="4" class="pt stock-pt" />)}
+          <text x={x(5) + 10} y={y(tuned[5]) + 4} class="dl">Tuned</text>
+          <text x={x(5) + 10} y={y(stock[5]) + 4} class="dl">Stock</text>
+          <line class="xh" data-xh x1="0" x2="0" y1={pt} y2={H - pb} />
+          <rect class="hit" data-hit x={pl - 20} y={pt} width={W - pl - pr + 40} height={H - pt - pb} />
+        </svg>
+        <div class="tip" data-tip role="status" aria-live="polite" hidden></div>
+      </div>
+      <table class="table" data-table hidden>
+        <caption class="sr-only">Goodput by concurrency</caption>
+        <thead><tr><th scope="col">Users</th><th scope="col">Tuned (tok/s)</th><th scope="col">Stock (tok/s)</th><th scope="col">Gain</th></tr></thead>
+        <tbody>
+          {conc.map((c, i) => (
+            <tr><td>{c}</td><td>{tuned[i].toLocaleString('en-US')}</td><td>{stock[i].toLocaleString('en-US')}</td><td>+{Math.round((tuned[i] / stock[i] - 1) * 100)}%</td></tr>
+          ))}
+        </tbody>
+      </table>
+      <p class="note">Illustrative shape. Tunyx measures your real curve on your hardware and workload.</p>
+    </figure>
+  </div>
+
+  <div class="container facts">
+    {facts.map((f, i) => (
+      <div class="fact reveal" style={`transition-delay:${i * 70}ms`}>
+        <span class="fv">{f.v}</span>
+        <span class="fk">{f.k}</span>
+        <span class="fn">{f.note}</span>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  const fig = document.querySelector<HTMLElement>('[data-chart]');
+  if (fig) {
+    const { conc, stock, tuned } = JSON.parse(fig.dataset.chart!) as { conc: number[]; stock: number[]; tuned: number[] };
+    const svg = fig.querySelector('svg')!;
+    const hit = fig.querySelector<SVGRectElement>('[data-hit]')!;
+    const xh = fig.querySelector<SVGLineElement>('[data-xh]')!;
+    const tip = fig.querySelector<HTMLElement>('[data-tip]')!;
+    const plot = fig.querySelector<HTMLElement>('[data-plot]')!;
+    const W = 560, pl = 52, pr = 92;
+    const xs = conc.map((_, i) => pl + (i / (conc.length - 1)) * (W - pl - pr));
+    const fmt = (n: number) => n.toLocaleString('en-US');
+
+    function row(color: string, dashed: boolean, value: string, label: string) {
+      const r = document.createElement('div'); r.className = 'tr';
+      const key = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      key.setAttribute('width', '16'); key.setAttribute('height', '6');
+      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', '1'); l.setAttribute('y1', '3'); l.setAttribute('x2', '15'); l.setAttribute('y2', '3');
+      l.setAttribute('stroke', color); l.setAttribute('stroke-width', '2.5');
+      if (dashed) l.setAttribute('stroke-dasharray', '3 2');
+      key.appendChild(l);
+      const v = document.createElement('strong'); v.textContent = value;
+      const s = document.createElement('span'); s.textContent = label;
+      r.append(key, v, s);
+      return r;
+    }
+
+    function show(i: number) {
+      xh.setAttribute('x1', String(xs[i])); xh.setAttribute('x2', String(xs[i])); xh.classList.add('on');
+      tip.replaceChildren();
+      const h = document.createElement('div'); h.className = 'th'; h.textContent = `${conc[i]} concurrent users`;
+      tip.append(h,
+        row('var(--series-tuned)', false, `${fmt(tuned[i])} tok/s`, 'Tuned'),
+        row('var(--series-stock)', true, `${fmt(stock[i])} tok/s`, 'Stock defaults'));
+      const g = document.createElement('div'); g.className = 'tg'; g.textContent = `+${Math.round((tuned[i] / stock[i] - 1) * 100)}% goodput`;
+      tip.append(g);
+      tip.hidden = false;
+      const box = svg.getBoundingClientRect();
+      const px = (xs[i] / W) * box.width;
+      tip.style.left = `${Math.min(Math.max(px, 90), box.width - 90)}px`;
+    }
+    function hide() { tip.hidden = true; xh.classList.remove('on'); }
+    function nearest(clientX: number) {
+      const box = svg.getBoundingClientRect();
+      const vx = ((clientX - box.left) / box.width) * W;
+      let best = 0;
+      xs.forEach((v, i) => { if (Math.abs(v - vx) < Math.abs(xs[best] - vx)) best = i; });
+      return best;
+    }
+    hit.addEventListener('pointermove', (e) => show(nearest(e.clientX)));
+    hit.addEventListener('pointerleave', hide);
+    plot.tabIndex = 0;
+    let k = 3;
+    plot.addEventListener('focus', () => show(k));
+    plot.addEventListener('blur', hide);
+    plot.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { k = Math.min(conc.length - 1, k + 1); show(k); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { k = Math.max(0, k - 1); show(k); e.preventDefault(); }
+    });
+
+    const toggle = fig.querySelector<HTMLButtonElement>('[data-table-toggle]')!;
+    const table = fig.querySelector<HTMLElement>('[data-table]')!;
+    toggle.addEventListener('click', () => {
+      const on = toggle.getAttribute('aria-pressed') !== 'true';
+      toggle.setAttribute('aria-pressed', String(on));
+      table.hidden = !on; plot.hidden = on;
+      toggle.textContent = on ? 'Chart' : 'Table';
+    });
+  }
+</script>
+
+<style>
+  .proof { display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
+  .lede { margin-top: 20px; }
+  .status-mock { margin-top: 28px; padding: 18px 20px; border-radius: 14px; border: 1px solid var(--line-1); background: rgba(5, 7, 10, 0.6); font-family: var(--font-mono); font-size: 13px; line-height: 1.9; color: var(--fg-1); overflow-x: auto; }
+  .status-mock div { white-space: nowrap; }
+  .status-mock .m { color: var(--mint-400); }
+  .status-mock .dim { color: var(--fg-3); }
+  .status-mock b { color: var(--mint-300); font-weight: 600; }
+
+  .chart { margin: 0; padding: 22px 22px 18px; }
+  figcaption { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+  figcaption h3 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .sub { margin: 4px 0 0; font-size: 13px; color: var(--fg-3); }
+  .tbl-toggle { flex: none; font-size: 12.5px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--fg-2); cursor: pointer; }
+  .tbl-toggle:hover { color: var(--fg-1); border-color: var(--line-3); }
+  .legend { list-style: none; display: flex; gap: 18px; padding: 0; margin: 14px 0 6px; font-size: 13px; color: var(--fg-2); }
+  .legend li { display: flex; align-items: center; gap: 8px; }
+  .plot { position: relative; outline-offset: 4px; border-radius: 8px; }
+  .plot svg { width: 100%; height: auto; overflow: visible; }
+  .grid { stroke: rgba(160, 175, 200, 0.09); stroke-width: 1; }
+  .axis { stroke: rgba(160, 175, 200, 0.28); stroke-width: 1; }
+  .tick { fill: var(--fg-3); font-size: 11.5px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .axis-title { fill: var(--fg-3); font-size: 11.5px; }
+  .ln { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .tuned { stroke: var(--series-tuned); stroke-width: 2.5; }
+  .stock { stroke: var(--series-stock); stroke-dasharray: 5 4; }
+  .pt { stroke: var(--ink-3); stroke-width: 2; }
+  .tuned-pt { fill: var(--series-tuned); }
+  .stock-pt { fill: var(--series-stock); }
+  .dl { fill: var(--fg-2); font-size: 12px; font-weight: 500; }
+  .xh { stroke: rgba(238, 241, 246, 0.35); stroke-width: 1; opacity: 0; }
+  .xh:global(.on) { opacity: 1; }
+  .hit { fill: transparent; cursor: crosshair; }
+  .tip {
+    position: absolute; top: 4px; transform: translateX(-50%); pointer-events: none; min-width: 168px;
+    padding: 10px 12px; border-radius: 10px; background: rgba(12, 16, 22, 0.96); border: 1px solid var(--line-2);
+    box-shadow: 0 14px 40px -12px rgba(0, 0, 0, 0.8); font-size: 12.5px;
+  }
+  .tip :global(.th) { color: var(--fg-3); margin-bottom: 6px; font-size: 12px; }
+  .tip :global(.tr) { display: flex; align-items: center; gap: 8px; line-height: 1.8; }
+  .tip :global(.tr strong) { color: var(--fg-1); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tip :global(.tr span) { color: var(--fg-3); }
+  .tip :global(.tg) { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line-1); color: var(--fg-1); font-weight: 600; }
+  .table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .table th, .table td { text-align: right; padding: 9px 10px; border-bottom: 1px solid var(--line-1); }
+  .table th:first-child, .table td:first-child { text-align: left; }
+  .table th { color: var(--fg-3); font-weight: 500; font-size: 12.5px; }
+  .note { margin: 10px 0 0; font-size: 12px; color: var(--fg-3); }
+
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: clamp(56px, 7vw, 88px); border: 1px solid var(--line-1); border-radius: var(--radius-lg); overflow: hidden; }
+  .fact { padding: 26px 24px; display: flex; flex-direction: column; gap: 6px; background: rgba(255, 255, 255, 0.015); }
+  .fact + .fact { border-left: 1px solid var(--line-1); }
+  .fv { font-size: clamp(26px, 2.6vw, 34px); font-weight: 620; letter-spacing: -0.035em; color: var(--fg-1); }
+  .fk { font-size: 14.5px; color: var(--fg-2); }
+  .fn { font-size: 12.5px; color: var(--fg-3); }
+  @media (max-width: 980px) { .proof { grid-template-columns: 1fr; } .facts { grid-template-columns: 1fr 1fr; } .fact:nth-child(3) { border-left: 0; } .fact:nth-child(n + 3) { border-top: 1px solid var(--line-1); } }
+  @media (max-width: 560px) { .facts { grid-template-columns: 1fr; } .fact + .fact { border-left: 0; border-top: 1px solid var(--line-1); } }
+</style>

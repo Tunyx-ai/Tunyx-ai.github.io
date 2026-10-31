@@ -1,0 +1,69 @@
+---
+title: Optimization
+description: How Tunyx searches for the fastest configuration that meets your targets, and proves the gain.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Modes
+
+| Mode | What it tries | When to use |
+|---|---|---|
+| `quick` | One validated config | Fast iteration, small GPUs |
+| `standard` (default) | 3–5 configs plus refinement around the winner | Most deployments |
+| `thorough` | 6–10 configs | Production models that will run for a long time |
+
+```bash
+tunyx up MODEL -O thorough
+```
+
+Whatever the mode, the endpoint is live as soon as the first config validates. Use `--wait-optimal` to wait for
+the full search instead.
+
+## What Tunyx varies
+
+- **Engine:** vLLM, SGLang, llama.cpp or MLX, whichever is installed and supports the model.
+- **Precision:** full, FP8 weights, FP8 KV cache, or GGUF quantizations.
+- **Context length:** derived from available KV-cache memory.
+- **Batching:** `max_num_seqs` and prefill chunk size, refined around the winner.
+- **Speculative decoding:** n-gram candidates for chat and agent workloads.
+- **GPU layout:** tensor parallelism vs replicas on multi-GPU machines.
+
+## How a winner is chosen
+
+1. Each candidate runs the profile's traffic at several concurrency levels, through the gateway, so the overhead
+   users see is included.
+2. It must meet the latency targets and pass the [quality gate](/docs/concepts/quality-gates/).
+3. Among those, the one with the most **goodput** wins: tokens per second from requests that met the targets.
+4. It must beat the current config by at least 5%, and be statistically better rather than noisily ahead.
+
+Candidates that run out of memory are stepped down automatically. Engines that can't load the model are skipped.
+
+## Proof: comparison with stock defaults
+
+In `standard` and `thorough` modes, Tunyx also benchmarks the engine's **untuned defaults** on the same GPU
+share and workload. `tunyx status` then shows what tuning bought you:
+
+```txt
+Tuned config vs stock engine defaults on this workload: +38% goodput
+```
+
+## Tuning cache
+
+Results are remembered per model and hardware, so redeploying the same model skips the search. Fine-tunes of the
+same base architecture reuse each other's results as a starting point. Use `--fresh` to ignore the cache.
+
+## Busy GPUs and the optimize window
+
+Background optimization never takes a busy single-GPU deployment offline for long. When traffic is waiting, the
+search is shortened, and a config that meets its targets is never replaced by one that doesn't. To allow full
+re-optimization during quiet hours:
+
+```bash
+tunyx config set optimize_window 02:00-05:00
+```
+
+<Aside>
+  Tunyx also waits at least five minutes after a model starts serving before restarting it for optimization, so
+  users who just started using it aren't interrupted.
+</Aside>

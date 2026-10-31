@@ -1,0 +1,95 @@
+---
+title: Installation
+description: Install Tunyx and an inference engine on Linux, macOS, or with Docker.
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+## Requirements
+
+| | Minimum |
+|---|---|
+| Python | 3.10 or newer |
+| OS | Linux or macOS |
+| Hardware | NVIDIA or AMD GPU, Apple Silicon, or CPU (small GGUF models) |
+| Disk | Room for model weights (a 7B model is about 15 GB at full precision) |
+
+## Install Tunyx
+
+```bash
+pip install git+https://github.com/Tunyx-ai/tunyx
+```
+
+This installs the `tunyx` command. Verify it:
+
+```bash
+tunyx version
+tunyx doctor
+```
+
+<Aside>
+  During the private beta the repository is invite-only. Once Tunyx is published, this becomes `pip install tunyx`.
+</Aside>
+
+## Install an engine
+
+Tunyx runs models through an inference engine. Install at least one:
+
+<Tabs syncKey="hw">
+  <TabItem label="NVIDIA GPU">
+    ```bash
+    pip install vllm            # recommended
+    pip install sglang          # optional second engine, often better for agent workloads
+    ```
+  </TabItem>
+  <TabItem label="AMD GPU">
+    Install the ROCm build of vLLM following the vLLM documentation for your ROCm version.
+  </TabItem>
+  <TabItem label="Apple Silicon">
+    ```bash
+    pip install mlx-lm          # MLX-format models
+    brew install llama.cpp      # GGUF models
+    ```
+    On Macs with MLX installed, Tunyx prefers MLX models.
+  </TabItem>
+  <TabItem label="CPU only">
+    ```bash
+    brew install llama.cpp      # or a llama.cpp release binary
+    ```
+    Use small GGUF models; Tunyx picks the best quantization that fits in memory.
+  </TabItem>
+</Tabs>
+
+### Engines in their own environment
+
+vLLM and SGLang pin specific CUDA and PyTorch versions, so many teams install them in a separate virtualenv.
+Point Tunyx at it:
+
+```bash
+export TUNYX_VLLM_PYTHON=/opt/vllm-env/bin/python
+export TUNYX_SGLANG_PYTHON=/opt/sglang-env/bin/python
+export TUNYX_MLX_PYTHON=/opt/mlx-env/bin/python
+export TUNYX_LLAMACPP_SERVER=/usr/local/bin/llama-server
+```
+
+## Gated models
+
+Models like Llama and Gemma require accepting a license on Hugging Face. Accept it on the model page, then:
+
+```bash
+export HF_TOKEN=hf_...
+```
+
+## Docker (NVIDIA)
+
+```bash
+docker build -t tunyx .
+docker run --gpus all -p 8800:8800 \
+  -v tunyx-data:/data -v ~/.cache/huggingface:/root/.cache/huggingface \
+  -e HF_TOKEN tunyx up Qwen/Qwen2.5-7B-Instruct --profile chat
+```
+
+## Where Tunyx keeps data
+
+Everything lives in `~/.tunyx` (override with `TUNYX_HOME`): the state database, engine logs and backups. Model
+weights use the normal Hugging Face cache.

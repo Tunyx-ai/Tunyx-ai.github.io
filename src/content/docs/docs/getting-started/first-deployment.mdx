@@ -1,0 +1,72 @@
+---
+title: Your first deployment
+description: What happens when you run tunyx up, and the options you'll use most.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The guided way is `tunyx init`. It asks what you're building, suggests a model that fits your hardware, deploys
+it and sends a test request. The direct way:
+
+```bash
+tunyx up qwen2.5:7b --profile chat
+```
+
+## What happens
+
+```txt
+07:05:42 Qwen2ForCausalLM, 7.6B params, 15.2 GB weights
+07:05:42 Serving first: vllm tp=1 ctx=32768 (highest fidelity) as soon as it validates
+07:06:31 candidate 1: 1840 tok/s @c=4, TTFT p50 61ms, ITL p50 9.8ms · quality 0.95
+...
+07:12:10 Tuned config vs stock engine defaults on this workload: +38% goodput
+```
+
+The numbers above are illustrative; Tunyx prints the ones it measures on your machine.
+
+1. `tunyx up` starts the background daemon if it isn't running. You don't need `tunyx serve` for local use.
+2. The endpoint is ready at the "serving" message.
+3. Optimization continues in the background and promotes a better config only if it passes every check.
+
+## Inspect it
+
+```bash
+tunyx ps                   # all deployments with live speed and memory
+tunyx status NAME          # config and rationale, benchmarks, quality, cost, revisions
+tunyx logs NAME -f         # engine output
+tunyx logs NAME --events   # Tunyx's decisions
+```
+
+## Options you'll use most
+
+| Option | What it does |
+|---|---|
+| `-p, --profile` | `chat`, `agent`, `batch` or `mixed` (default). See [Workload profiles](/docs/concepts/profiles/) |
+| `-n, --name` | Deployment name, which is also the model name clients use |
+| `-O, --optimize` | `quick`, `standard` (default) or `thorough` |
+| `--memory 0.5` | Share of each GPU this model may use, so several models can share |
+| `--gpus 0,1` | Which GPUs to use |
+| `--ctx 16384` | Fix the context length (default: the most that fits) |
+| `--engine`, `--quant` | Pin the engine (`vllm`, `sglang`, `llamacpp`) or precision (`none`, `fp8`, `Q4_K_M`, …) |
+| `--wait-optimal` | Don't serve until optimization finishes |
+| `--fresh` | Ignore cached tuning results |
+| `--idle-ttl 900` | Sleep after 15 idle minutes; wakes automatically on the next request |
+| `--priority 10` | Higher-priority models are never evicted for lower ones |
+| `--tuning` | `off`, `propose` (default) or `auto` live retuning |
+| `--lora NAME=PATH` | Serve a LoRA adapter, requested with `model=NAME` |
+| `--engine-arg=--flag` | Pass any raw engine flag |
+| `--replace` | Redeploy under an existing name |
+| `-d, --detach` | Return immediately instead of following progress |
+
+## Stop, start, delete
+
+```bash
+tunyx stop NAME     # free the GPU, keep the configuration
+tunyx start NAME    # start again with the last validated config
+tunyx down NAME     # delete the deployment and its history
+```
+
+<Aside type="tip">
+  Not sure a model fits? `tunyx plan MODEL --profile agent` shows the plan and reasons without downloading
+  anything.
+</Aside>

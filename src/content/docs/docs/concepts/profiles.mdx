@@ -1,0 +1,59 @@
+---
+title: Workload profiles
+description: chat, agent, batch and mixed. How a profile shapes benchmarks, latency targets and quality checks.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A profile describes your traffic and what "good" means for it. Tunyx benchmarks every candidate config against
+that shape instead of a generic speed test, so the winner is the best config for *your* workload.
+
+```bash
+tunyx up MODEL --profile agent
+```
+
+## The four profiles
+
+| Profile | Use it for | Traffic it simulates | Latency targets | Quality requirements |
+|---|---|---|---|---|
+| `chat` | Chatbots, assistants | 1–8 users, 64–1k-token prompts | First token p50 300 ms, p99 1.5 s · per token p50 40 ms | Accuracy floor |
+| `agent` | Coding agents, tool use, long-context RAG | 1–16 users, 2k–8k-token prompts with shared prefixes | First token p50 800 ms, p99 4 s · per token p50 50 ms | Tool calls **and** JSON must work |
+| `batch` | Offline jobs, high-volume APIs | 16–128 concurrent requests | First token p99 10 s · per token p99 250 ms | Accuracy floor |
+| `mixed` (default) | Not sure | 1–32 users, varied prompts | First token p50 600 ms, p99 4 s · per token p50 50 ms | Accuracy floor |
+
+**Aliases:** `coding`, `code` → `agent` · `interactive` → `chat` · `api`, `throughput`, `multi-user` → `batch` ·
+`rag` → `mixed`.
+
+## What a profile changes
+
+- **Benchmark shape:** prompt and output lengths, shared-prefix ratio (agents reuse long system prompts and
+  histories) and concurrency levels.
+- **Objective:** `chat` favours latency, `batch` favours throughput, `agent` and `mixed` balance both.
+- **Context length:** agents need at least 16k tokens and prefer 64k; batch needs only 4k.
+- **Session affinity:** `agent` and `mixed` route requests from the same conversation (by `X-Session-ID`,
+  `user`, or a shared prompt prefix) to the same replica, so its prompt cache is reused.
+- **Quality gate:** `agent` requires working tool calls and JSON.
+
+## Customize targets
+
+Override any part of a profile per deployment with `profile_overrides`, through the API or in a
+[YAML file](/docs/guides/gitops/):
+
+```yaml
+deployments:
+  - name: coder
+    model: Qwen/Qwen2.5-Coder-7B-Instruct
+    profile: agent
+    profile_overrides:
+      slo: { p99_ttft_ms: 3000 }
+```
+
+## Change profile later
+
+```bash
+tunyx reoptimize NAME --profile batch
+```
+
+<Aside type="tip">
+  Not sure which profile fits? Start with `mixed`. Live retuning will propose changes once real traffic arrives.
+</Aside>

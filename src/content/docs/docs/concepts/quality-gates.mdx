@@ -1,0 +1,52 @@
+---
+title: Quality gates
+description: How Tunyx makes sure a faster configuration doesn't give worse answers.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Faster configurations (lower precision, aggressive batching, speculative decoding) can quietly make answers
+worse. Nothing errors; your agents just start failing. Tunyx checks quality **before** any configuration
+serves traffic.
+
+## The built-in evaluation
+
+68 items covering:
+
+- reasoning and knowledge;
+- instruction following;
+- JSON and structured output;
+- tool calls;
+- code;
+- long context.
+
+## The rules
+
+- Every config must score above the profile's floor.
+- **Lossy configs** (FP8, FP8 KV cache, quantized) are compared against a full-precision reference run. If the
+  score drops more than the profile allows (3% for `agent`, 5% otherwise), the config is rejected.
+- `agent` deployments must produce valid tool calls and valid JSON.
+- A rejected config never serves traffic. `tunyx status` explains what failed:
+
+```txt
+safe fallback failed: tool-call accuracy 71% below 75%
+```
+
+## Your own test set
+
+Check a deployment against your own cases:
+
+```bash
+tunyx eval NAME --dataset my_eval.jsonl
+```
+
+Each line is one test case, with `contains` or `json` checks:
+
+```json
+{"id": "support-1", "kind": "contains", "messages": [{"role": "user", "content": "Refund window is 30 days; bought 10 days ago. Refund? yes/no"}], "expected": ["yes"]}
+{"id": "support-2", "kind": "json", "messages": [{"role": "user", "content": "Extract the order id from 'Order #A-1182 arrived damaged' as JSON {\"order_id\": ...}."}], "expected": {"order_id": "A-1182"}, "response_format": {"type": "json_object"}}
+```
+
+<Aside type="caution">
+  `tunyx up --skip-quality` turns the gate off. It exists for experiments; don't use it in production.
+</Aside>

@@ -1,0 +1,89 @@
+---
+const tabs = [
+  {
+    id: 'ceo', label: 'CEOs & founders',
+    head: 'Lower AI cost, your data stays home, no lock-in.',
+    points: [
+      ['Pay for GPUs, not per token', 'See your real cost per million tokens next to the API bill, and the point where self-hosting wins.'],
+      ['Ship AI features without an inference team', 'The expert tuning and on-call work is automated, so your engineers build product instead of babysitting GPUs.'],
+      ['Own the stack', 'Open models on your hardware or cloud. Switch models or engines without rewriting a line of application code.'],
+    ],
+  },
+  {
+    id: 'cto', label: 'CTOs & AI leads',
+    head: 'Production guarantees, not a science project.',
+    points: [
+      ['SLO-driven by design', 'Configs are chosen against your latency targets and promoted only if they meet them under realistic load.'],
+      ['Quality you can defend', 'Every change is gated on accuracy, tool calls and JSON against a full-precision reference. Regressions are blocked, not discovered.'],
+      ['Governed change', 'Canary rollouts, automatic rollback, four-eyes approval, a tamper-evident audit log, scoped API keys and rate limits.'],
+    ],
+  },
+  {
+    id: 'platform', label: 'Platform & ML engineers',
+    head: 'The inference runbook, automated.',
+    points: [
+      ['Fits your ops stack', 'Prometheus metrics, health and readiness probes, systemd and Kubernetes manifests, declarative YAML for GitOps.'],
+      ['Self-healing and crash-safe', 'Restarts with backoff, holds requests through crashes, re-attaches running engines across upgrades, hourly backups.'],
+      ['No black boxes', '`tunyx plan` explains every decision. Raw engine flags pass through when you need them.'],
+    ],
+  },
+  {
+    id: 'dev', label: 'Developers',
+    head: 'One command, then your usual SDK.',
+    points: [
+      ['Drop-in compatible', 'OpenAI, Anthropic and Ollama APIs with streaming, tools, JSON schema and reasoning. Change one base URL.'],
+      ['Works like Ollama, scales like vLLM', '`tunyx up` and `tunyx run` for the simple path, continuous batching underneath so concurrency doesn’t collapse.'],
+      ['Fine-tunes and adapters', 'Serve local checkpoints, GGUF files and LoRA adapters, each requested by name.'],
+    ],
+  },
+];
+---
+<section class="section" id="roles">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Built for every seat at the table</span>
+      <h2 class="h-section">What Tunyx means for you.</h2>
+    </div>
+
+    <div class="tabs reveal" data-tabs>
+      <div class="tablist" role="tablist" aria-label="Audience">
+        {tabs.map((t, i) => (
+          <button role="tab" id={`tab-${t.id}`} aria-controls={`panel-${t.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{t.label}</button>
+        ))}
+      </div>
+      {tabs.map((t, i) => (
+        <div class="card panel" role="tabpanel" id={`panel-${t.id}`} aria-labelledby={`tab-${t.id}`} hidden={i !== 0}>
+          <h3>{t.head}</h3>
+          <div class="pts">
+            {t.points.map(([h, b]) => (
+              <div class="pt">
+                <span class="tick" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+                </span>
+                <div><h4>{h}</h4><p set:html={b.replace(/`([^`]+)`/g, '<code>$1</code>')} /></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+
+<style>
+  .tabs { max-width: 980px; margin-inline: auto; }
+  .tablist { display: flex; gap: 4px; padding: 5px; border-radius: 999px; border: 1px solid var(--line-1); background: rgba(255, 255, 255, 0.025); width: fit-content; margin: 0 auto 22px; flex-wrap: wrap; justify-content: center; }
+  [role='tab'] { border: 0; background: transparent; padding: 9px 18px; border-radius: 999px; font-size: 14.5px; color: var(--fg-2); cursor: pointer; transition: color 160ms ease, background 160ms ease; }
+  [role='tab']:hover { color: var(--fg-1); }
+  [role='tab'][aria-selected='true'] { background: var(--ink-5); color: var(--fg-1); box-shadow: 0 0 0 1px var(--line-2), 0 6px 20px -8px rgba(0, 0, 0, 0.8); }
+  .panel { padding: clamp(26px, 4vw, 44px); }
+  .panel h3 { margin: 0 0 28px; font-size: clamp(22px, 2.4vw, 30px); letter-spacing: -0.03em; font-weight: 600; }
+  .pts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .pt { display: flex; gap: 14px; align-items: flex-start; }
+  .tick { flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; color: var(--mint-400); background: rgba(62, 232, 181, 0.1); margin-top: 1px; }
+  h4 { margin: 0 0 6px; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  p { margin: 0; font-size: 14.6px; color: var(--fg-2); line-height: 1.6; }
+  p :global(code) { font-size: 0.86em; background: rgba(255, 255, 255, 0.05); padding: 1px 6px; border-radius: 5px; border: 1px solid var(--line-1); }
+  @media (max-width: 860px) { .pts { grid-template-columns: 1fr; } }
+</style>

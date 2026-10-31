@@ -1,0 +1,48 @@
+---
+title: Swap, canary & rollback
+description: Update models and settings in production with gradual rollout and automatic rollback.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+```bash
+tunyx swap support Qwen/Qwen2.5-14B-Instruct
+```
+
+<Steps>
+
+1. The new model is planned, optimized and [quality-gated](/docs/concepts/quality-gates/) like a fresh
+   deployment. If it fails the gate, nothing changes.
+2. Traffic shifts gradually: **10% → 50% → 100%**.
+3. At each step, the new version's error rate and latency are compared with the current one.
+4. If anything gets worse, traffic returns to the old version automatically.
+
+</Steps>
+
+If the GPU can't hold both models at once, Tunyx switches **in place**: requests are queued during the switch,
+not dropped. If the new version regresses, the old one is restored.
+
+## Revisions
+
+Every change creates a numbered revision.
+
+```bash
+tunyx status support            # revision history with the outcome of each
+tunyx rollback support          # back to the previous good revision, or abort a running canary
+tunyx rollback support --to 3   # back to a specific revision
+```
+
+## Re-optimize
+
+Re-run the search, for example after your traffic changes or for a new profile:
+
+```bash
+tunyx reoptimize support --profile agent
+```
+
+Re-optimizations are canaried and rolled back the same way.
+
+<Aside type="tip">
+  Swapping to a fine-tune of the same base model reuses the validated config as a starting point, so the swap is
+  faster.
+</Aside>
