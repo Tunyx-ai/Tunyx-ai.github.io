@@ -71,6 +71,7 @@ Everything has a default. Settings marked **runtime** can also be changed on a r
 | `TUNYX_KEEP_ENGINES` | `0` | on plain SIGTERM, leave engines running for the next daemon to re-adopt. An explicit `tunyx shutdown` always decides for itself (`--keep-engines`) |
 | `TUNYX_GPU_MEMORY_GB` | – | override detected per-GPU memory (exotic environments) |
 | `TUNYX_VLLM_PYTHON` / `TUNYX_SGLANG_PYTHON` / `TUNYX_MLX_PYTHON` / `TUNYX_LLAMACPP_SERVER` | – | engines installed in their own environments |
+| `TUNYX_MAX_PASSES` | – | cap on optimization techniques tried per run (bounds optimization time; `0` = base configs only) |
 | `TUNYX_QUANT_PYTHON` | `quant-env` next to the vLLM environment, if present | Python with llm-compressor, used to build calibrated quantized variants |
 | `TUNYX_BENCHMARKS_DIR` | – | directory of `*.jsonl` eval sets usable as benchmarks by file name |
 | `TUNYX_ALLOW_CODE_EVAL` | `0` | allow code benchmarks (HumanEval, MBPP), which run model-written code in a limited subprocess |
