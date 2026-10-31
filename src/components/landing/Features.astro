@@ -1,4 +1,12 @@
 ---
+const s = (c: string, t: string) => `<span class="tok-${c}">${t}</span>`;
+const snippet = [
+  `${s('key', 'from')} openai ${s('key', 'import')} OpenAI`,
+  ``,
+  `client = ${s('fn', 'OpenAI')}(base_url=${s('str', '"http://localhost:8800/v1"')}, api_key=${s('str', '"none"')})`,
+  `client.chat.completions.${s('fn', 'create')}(model=${s('str', '"qwen-agent"')}, messages=msgs)`,
+];
+const raw = `from openai import OpenAI\n\nclient = OpenAI(base_url="http://localhost:8800/v1", api_key="none")\nclient.chat.completions.create(model="qwen-agent", messages=msgs)`;
 ---
 <section class="section" id="product">
   <div class="container">
@@ -20,7 +28,7 @@
           </dl>
         </div>
         <h3>Tuned for your workload, not a benchmark</h3>
-        <p>Pick chat, agent, batch or mixed. Each profile encodes real traffic and latency targets, and every config is measured against it.</p>
+        <p>Pick chat, agent, batch or mixed. Every config is measured against your traffic shape and latency targets.</p>
       </article>
 
       <!-- Quality gates -->
@@ -32,7 +40,7 @@
           <div class="row bad"><span class="no">✕</span>Tool calls (int4 build)<span class="sc">71% &lt; 75%</span></div>
         </div>
         <h3>Quality gates before anything serves</h3>
-        <p>68 checks across reasoning, tools, JSON, code and long context. Lossy configs are compared against full precision, and regressions never reach users.</p>
+        <p>68 checks, compared against full precision. A faster config that gives worse answers never reaches users.</p>
       </article>
 
       <!-- Canary -->
@@ -44,7 +52,7 @@
           <div class="rb"><span class="pill">auto-rollback armed</span></div>
         </div>
         <h3>Safe swaps with canary</h3>
-        <p>New models and settings take 10%, then 50%, then 100% of traffic, compared live and rolled back automatically on regression.</p>
+        <p>New models and settings roll out gradually, and roll back automatically on regression.</p>
       </article>
 
       <!-- Retuning -->
@@ -55,70 +63,43 @@
           <p class="why">KV cache 41% used, requests queueing at peak</p>
           <div class="p-act"><span class="b on">Approve</span><span class="b">Reject</span></div>
         </div>
-        <h3>Live retuning</h3>
-        <p>Watches latency, KV pressure, queueing and prefix hits, then proposes (or auto-applies, within your bounds) a better config.</p>
-      </article>
-
-      <!-- Economics -->
-      <article class="card f s2 reveal">
-        <div class="viz econ" aria-hidden="true">
-          <div class="big">$0.21<small>/ Mtok</small></div>
-          <div class="cmp"><span class="down">↓ 65%</span> vs your $0.60 API price</div>
-          <div class="idle">Using 38% of capacity · ≈$37/day idle</div>
-        </div>
-        <h3>Cost per token, from day one</h3>
-        <p>Cost per million tokens, utilization, idle spend, and a comparison with the API price you pay today.</p>
-      </article>
-
-      <!-- APIs -->
-      <article class="card f s3 reveal">
-        <div class="viz apis" aria-hidden="true">
-          <div class="ep"><span class="m">POST</span>/v1/chat/completions<span class="tag2">OpenAI</span></div>
-          <div class="ep"><span class="m">POST</span>/v1/responses<span class="tag2">OpenAI</span></div>
-          <div class="ep"><span class="m">POST</span>/v1/messages<span class="tag2">Anthropic</span></div>
-          <div class="ep"><span class="m">POST</span>/api/chat<span class="tag2">Ollama</span></div>
-        </div>
-        <h3>One endpoint. Every client you already use.</h3>
-        <p>OpenAI, Responses, Anthropic and Ollama APIs with streaming, tools and reasoning, so SDKs, agents, Open WebUI and LiteLLM work unchanged.</p>
+        <h3>Live retuning, self-healing</h3>
+        <p>Proposes better settings as traffic shifts. Restarts crashed engines while requests wait.</p>
       </article>
 
       <!-- Packing -->
-      <article class="card f s3 reveal">
+      <article class="card f s2 pack-card reveal">
         <div class="viz pack" aria-hidden="true">
-          <div class="gpu"><span class="lbl mono">GPU 0 · 80 GB</span>
-            <div class="mem">
-              <span class="m1" style="--w:46%">chat · 7B</span>
-              <span class="m2" style="--w:38%">coder · 14B</span>
-              <span class="m3" style="--w:16%">zzz</span>
-            </div>
+          <span class="lbl mono">GPU 0 · 80 GB</span>
+          <div class="mem">
+            <span class="m1" style="--w:46%">chat</span>
+            <span class="m2" style="--w:38%">coder</span>
+            <span class="m3" style="--w:16%">zzz</span>
           </div>
-          <p class="mono muted">batch-8B sleeping · wakes on next request</p>
+          <p class="mono muted">batch sleeping · wakes on request</p>
         </div>
         <h3>Several models, one machine</h3>
-        <p>Models share GPUs by memory share. Idle, lower-priority models sleep and wake on demand, with requests queued, never dropped.</p>
+        <p>Models share GPUs. Idle ones sleep and wake on demand, with requests queued, never dropped.</p>
       </article>
 
-      <!-- Small trio -->
-      <article class="card f s2 reveal small">
-        <span class="ico" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-        </span>
-        <h3>Self-healing</h3>
-        <p>Crashed engines restart while requests wait, hung engines leave routing, and repeated out-of-memory crashes roll out a smaller config.</p>
-      </article>
-      <article class="card f s2 reveal small">
-        <span class="ico" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 9-3 3 3 3"/><path d="m16 9 3 3-3 3"/><path d="m13 6-2 12"/></svg>
-        </span>
-        <h3>Agent-first defaults</h3>
-        <p>Prefix caching, session affinity and the right tool-call and reasoning parser for each model family, with no setup.</p>
-      </article>
-      <article class="card f s2 reveal small">
-        <span class="ico" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-        </span>
-        <h3>Explains every choice</h3>
-        <p><code>tunyx plan</code> shows what it will run and why before anything starts. Errors come with the fix.</p>
+      <!-- One endpoint + code -->
+      <article class="card f s6 api reveal">
+        <div class="api-copy">
+          <h3>One endpoint. Every client you already use.</h3>
+          <p>OpenAI, Responses, Anthropic and Ollama APIs with streaming, tools, JSON schema and reasoning. Change one base URL; SDKs, agents, Open WebUI and LiteLLM keep working.</p>
+          <div class="eps" aria-label="Supported APIs">
+            <span class="ep"><span class="m">POST</span>/v1/chat/completions</span>
+            <span class="ep"><span class="m">POST</span>/v1/responses</span>
+            <span class="ep"><span class="m">POST</span>/v1/messages</span>
+            <span class="ep"><span class="m">POST</span>/api/chat</span>
+          </div>
+        </div>
+        <div class="code">
+          <div class="file"><span>app.py</span>
+            <button class="copy-btn" data-copy={raw} aria-label="Copy OpenAI SDK example"><span class="c1">Copy</span><span class="c2">Copied</span></button>
+          </div>
+          <pre><code>{snippet.map((l) => <span class="line" set:html={l || ' '} />)}</code></pre>
+        </div>
       </article>
     </div>
   </div>
@@ -129,14 +110,12 @@
   .f { padding: 22px 24px 26px; display: flex; flex-direction: column; overflow: hidden; }
   .s3 { grid-column: span 3; }
   .s2 { grid-column: span 2; }
+  .s6 { grid-column: span 6; }
   h3 { margin: 22px 0 8px; font-size: 18px; letter-spacing: -0.02em; font-weight: 600; }
   p { margin: 0; color: var(--fg-2); font-size: 14.8px; line-height: 1.6; }
-  .small h3 { margin-top: 18px; }
-  .ico { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; color: var(--mint-400); background: rgba(62, 232, 181, 0.08); border: 1px solid rgba(62, 232, 181, 0.2); }
-  code { font-size: 0.88em; background: rgba(255, 255, 255, 0.05); padding: 1px 6px; border-radius: 5px; border: 1px solid var(--line-1); }
   .mono { font-family: var(--font-mono); font-size: 12.5px; }
 
-  .viz { border-radius: 14px; border: 1px solid var(--line-1); background: rgba(5, 7, 10, 0.5); padding: 16px; min-height: 172px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+  .viz { border-radius: 14px; border: 1px solid var(--line-1); background: rgba(5, 7, 10, 0.5); padding: 16px; min-height: 164px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
 
   .seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); }
   .seg span { text-align: center; font-size: 13px; padding: 6px 0; border-radius: 7px; color: var(--fg-3); }
@@ -167,23 +146,28 @@
   .b { font-size: 12.5px; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--line-2); color: var(--fg-2); }
   .b.on { background: var(--mint-400); color: var(--on-mint); border-color: transparent; font-weight: 600; }
 
-  .econ .big { font-size: 40px; font-weight: 620; letter-spacing: -0.04em; line-height: 1; }
-  .econ .big small { font-size: 14px; color: var(--fg-3); font-weight: 500; margin-left: 6px; letter-spacing: 0; }
-  .cmp { font-size: 13.5px; color: var(--fg-2); }
-  .down { color: var(--mint-400); font-weight: 600; }
-  .idle { font-size: 12.5px; color: var(--fg-3); padding-top: 8px; border-top: 1px dashed var(--line-2); }
-
-  .ep { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 13px; color: var(--fg-1); padding: 7px 10px; border-radius: 9px; background: rgba(255, 255, 255, 0.025); }
-  .ep .m { font-size: 11px; color: var(--mint-400); background: rgba(62, 232, 181, 0.1); padding: 1px 6px; border-radius: 5px; }
-  .tag2 { margin-left: auto; font-family: var(--font-sans); font-size: 12px; color: var(--fg-3); }
-
-  .pack .lbl { color: var(--fg-3); display: block; margin-bottom: 8px; }
+  .pack .lbl { color: var(--fg-3); display: block; }
   .mem { display: flex; gap: 3px; height: 54px; }
   .mem span { width: var(--w); border-radius: 9px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 12px; color: var(--fg-1); }
   .m1 { background: linear-gradient(180deg, rgba(62, 232, 181, 0.35), rgba(62, 232, 181, 0.18)); box-shadow: inset 0 0 0 1px rgba(62, 232, 181, 0.4); }
   .m2 { background: linear-gradient(180deg, rgba(56, 189, 248, 0.32), rgba(56, 189, 248, 0.16)); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.4); }
   .m3 { background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0 6px, transparent 6px 12px); box-shadow: inset 0 0 0 1px var(--line-2); color: var(--fg-3) !important; }
 
-  @media (max-width: 1000px) { .s3, .s2 { grid-column: span 3; } }
-  @media (max-width: 680px) { .bento { grid-template-columns: 1fr; } .s3, .s2 { grid-column: auto; } }
+  .api { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 28px; align-items: center; }
+  .api h3 { margin-top: 4px; font-size: 22px; }
+  .eps { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .ep { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12.5px; color: var(--fg-1); padding: 6px 10px; border-radius: 9px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line-1); }
+  .ep .m { font-size: 10.5px; color: var(--mint-400); background: rgba(62, 232, 181, 0.1); padding: 1px 6px; border-radius: 5px; }
+  .code { border-radius: 14px; border: 1px solid var(--line-1); background: rgba(5, 7, 10, 0.7); overflow: hidden; }
+  .file { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line-1); font-family: var(--font-mono); font-size: 12px; color: var(--fg-3); }
+  .copy-btn { border: 1px solid var(--line-2); background: transparent; color: var(--fg-2); font-size: 12px; padding: 3px 10px; border-radius: 7px; cursor: pointer; }
+  .copy-btn:hover { color: var(--fg-1); border-color: var(--line-3); }
+  .copy-btn .c2 { display: none; color: var(--mint-400); }
+  .copy-btn:global(.copied) .c1 { display: none; }
+  .copy-btn:global(.copied) .c2 { display: inline; }
+  pre { margin: 0; padding: 14px 16px 18px; overflow-x: auto; font-size: 13px; line-height: 1.8; color: var(--fg-1); }
+  .line { display: block; white-space: pre; }
+
+  @media (max-width: 1000px) { .s3, .s2 { grid-column: span 3; } .s6, .pack-card { grid-column: span 6; } .api { grid-template-columns: 1fr; } }
+  @media (max-width: 680px) { .bento { grid-template-columns: 1fr; } .s3, .s2, .s6 { grid-column: auto; } }
 </style>

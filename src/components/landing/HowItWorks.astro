@@ -1,35 +1,10 @@
 ---
 const steps = [
-  {
-    k: 'Plan',
-    title: 'Reads your hardware and model',
-    body: 'Detects GPUs, MIG slices, Apple Silicon or CPU. Reads the model config without downloading weights, then picks the engine, precision, context and layout, and explains why.',
-    cmd: 'tunyx plan',
-  },
-  {
-    k: 'Serve',
-    title: 'Live in one model load',
-    body: 'Starts the highest-fidelity config that fits and opens the endpoint as soon as it passes its checks. No waiting for a full search.',
-    cmd: 'tunyx up',
-  },
-  {
-    k: 'Optimize',
-    title: 'Measures real candidates',
-    body: 'In the background, benchmarks faster configs against your workload profile: prompt shapes, concurrency and latency targets. In parallel across GPUs.',
-    cmd: '-O standard',
-  },
-  {
-    k: 'Validate',
-    title: 'Promotes only what passes',
-    body: 'Every candidate must hit its latency targets and pass the quality gate, compared against full precision. If nothing passes, a safe config serves and you get the reason.',
-    cmd: 'quality gate',
-  },
-  {
-    k: 'Operate',
-    title: 'Keeps it healthy',
-    body: 'Self-heals crashes, sleeps idle models, canaries every change with automatic rollback, and proposes retunes as your traffic shifts.',
-    cmd: 'tunyx status',
-  },
+  { k: 'Plan', title: 'Reads hardware and model', body: 'Picks engine, precision, context and layout for your GPUs, and explains why.', cmd: 'tunyx plan' },
+  { k: 'Serve', title: 'Live in one model load', body: 'The safest config that fits serves as soon as it passes its checks.', cmd: 'tunyx up' },
+  { k: 'Optimize', title: 'Measures real candidates', body: 'Benchmarks faster configs against your workload in the background.', cmd: '-O standard' },
+  { k: 'Validate', title: 'Promotes only what passes', body: 'Latency targets and the quality gate, or it keeps the safe config and tells you why.', cmd: 'quality gate' },
+  { k: 'Operate', title: 'Keeps it healthy', body: 'Self-heals, sleeps idle models, canaries changes and retunes from traffic.', cmd: 'tunyx status' },
 ];
 ---
 <section class="section" id="how">
@@ -37,7 +12,7 @@ const steps = [
     <div class="section-head center reveal">
       <span class="eyebrow">How it works</span>
       <h2 class="h-section">One closed loop, from model to healthy endpoint.</h2>
-      <p class="lede">You give it a model and a workload. Tunyx does the expert work a senior inference engineer would, and keeps doing it.</p>
+      <p class="lede">The expert work of a senior inference engineer, automated, and repeated as your traffic changes.</p>
     </div>
 
     <ol class="loop">
@@ -55,10 +30,6 @@ const steps = [
         </li>
       ))}
     </ol>
-    <p class="loopback reveal">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>
-      Real traffic feeds back into the loop: new proposals are validated and canaried the same way.
-    </p>
   </div>
 </section>
 
@@ -75,14 +46,12 @@ const steps = [
     font-family: var(--font-mono); font-size: 14px; font-weight: 600;
     box-shadow: 0 0 24px -4px rgba(62, 232, 181, 0.45);
   }
-  .body { padding: 20px 18px 22px; width: 100%; height: 100%; }
+  .body { padding: 18px 18px 20px; width: 100%; height: 100%; }
   .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .k { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mint-400); }
   code { font-size: 11.5px; color: var(--fg-3); background: rgba(255, 255, 255, 0.04); padding: 2px 7px; border-radius: 6px; border: 1px solid var(--line-1); white-space: nowrap; }
   h3 { margin: 18px 0 8px; font-size: 17px; letter-spacing: -0.02em; font-weight: 600; line-height: 1.3; }
   p { margin: 0; color: var(--fg-2); font-size: 14.2px; line-height: 1.6; }
-  .loopback { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 36px auto 0; color: var(--fg-3); font-size: 14.5px; text-align: center; }
-  .loopback svg { color: var(--mint-400); flex: none; }
   @media (max-width: 1080px) {
     .loop { grid-template-columns: 1fr; max-width: 640px; margin-inline: auto; }
     .loop::before { top: 20px; bottom: 20px; left: 19px; right: auto; width: 1px; height: auto; background: linear-gradient(180deg, var(--mint-400), var(--sky-400)); }

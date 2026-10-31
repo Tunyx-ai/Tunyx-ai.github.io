@@ -50,6 +50,7 @@ export default defineConfig({
             { label: 'Workload profiles', slug: 'docs/concepts/profiles' },
             { label: 'Optimization', slug: 'docs/concepts/optimization' },
             { label: 'Quality gates', slug: 'docs/concepts/quality-gates' },
+            { label: 'Tunyx vs alternatives', slug: 'docs/concepts/comparison' },
           ],
         },
         {
