@@ -1,52 +1,93 @@
 ---
 title: Quality gates
-description: How Tunyx makes sure a faster configuration doesn't give worse answers.
+description: Choose the benchmarks and thresholds every optimized configuration must pass.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-Faster configurations (lower precision, aggressive batching, speculative decoding) can quietly make answers
-worse. Nothing errors; your agents just start failing. Tunyx checks quality **before** any configuration
-serves traffic.
+Faster configurations can quietly make answers worse. Every configuration Tunyx tries must pass your **quality
+suite** before it serves traffic.
 
-## The built-in evaluation
+## The default: core checks
 
-68 items covering:
+Without a suite, Tunyx runs its built-in check: 68 items covering reasoning, knowledge, instruction following, JSON,
+tool calls, code and long context. The workload profile sets the rules:
 
-- reasoning and knowledge;
-- instruction following;
-- JSON and structured output;
-- tool calls;
-- code;
-- long context.
+- the score must stay above the profile's floor;
+- lossy configurations may not drop more than the profile allows (3% for `agent`, 5% otherwise) versus full precision;
+- `agent` deployments must produce valid tool calls and JSON.
 
-## The rules
-
-- Every config must score above the profile's floor.
-- **Lossy configs** (FP8, FP8 KV cache, quantized) are compared against a full-precision reference run. If the
-  score drops more than the profile allows (3% for `agent`, 5% otherwise), the config is rejected.
-- `agent` deployments must produce valid tool calls and valid JSON.
-- A rejected config never serves traffic. `tunyx status` explains what failed:
-
-```txt
-safe fallback failed: tool-call accuracy 71% below 75%
-```
-
-## Your own test set
-
-Check a deployment against your own cases:
+## Choose benchmarks and thresholds
 
 ```bash
-tunyx eval NAME --dataset my_eval.jsonl
+tunyx up qwen2.5:7b --bench core --bench gsm8k:min=0.7 --bench mmlu:drop=2% --bench ifeval
 ```
 
-Each line is one test case, with `contains` or `json` checks:
+| Spec | Meaning |
+|---|---|
+| `gsm8k` | Fail if it drops more than 3 points vs full precision (the default) |
+| `gsm8k:min=0.7` | Fail if the score is below 70% |
+| `mmlu:drop=2%` | Fail if the score drops more than 2 points vs full precision |
+| `mmlu:n=300,min=0.6,drop=1%` | 300 items, both thresholds |
+| `file:my_eval.jsonl:min=0.9` | Your own test set |
+
+Change the suite of a running deployment with `tunyx quality NAME --bench ...`, or pass `--bench` to
+`tunyx reoptimize` and `tunyx swap`.
+
+## Available benchmarks
+
+| Name | Measures | Default items |
+|---|---|---|
+| `core` | The built-in checks above | 68 |
+| `gsm8k` | Multi-step math (very sensitive to quantization) | 100 |
+| `mmlu` | Broad world knowledge | 200 |
+| `arc_challenge` | Science reasoning | 150 |
+| `hellaswag` | Commonsense reasoning | 150 |
+| `truthfulqa` | Truthfulness | 150 |
+| `winogrande` | Commonsense and coreference | 150 |
+| `boolq` | Reading comprehension | 150 |
+| `ifeval` | Instruction following (verifiable subset) | 100 |
+| `humaneval`, `mbpp` | Code generation | 164 / 150 |
+
+List them with `tunyx benchmarks`, and preview items exactly as the model sees them with `tunyx benchmarks show gsm8k`.
+
+Benchmarks are small samples of the real Hugging Face datasets, drawn the same way every time, so the full-precision
+reference and each candidate answer exactly the same questions. They download once and are cached under
+`~/.tunyx/benchmarks`. On air-gapped machines, run `tunyx benchmarks pull gsm8k mmlu` on a connected machine and copy
+that folder over.
+
+<Aside type="caution">
+  HumanEval and MBPP run model-written code to score it. They are off unless `TUNYX_ALLOW_CODE_EVAL=1` is set on the
+  daemon; code runs in a time- and memory-limited subprocess. Only enable it for models you trust.
+</Aside>
+
+## Noise protection
+
+Small samples fluctuate. A drop only counts when it shows up on the *same* questions: the candidate must lose at least
+two more answers than it gains. Reports also show a 95% confidence interval for every score and the McNemar p-value
+for every comparison.
+
+## What happens when a threshold breaks
+
+A lossy optimization that breaks a threshold is **stepped back** to the next less aggressive option (for example INT4
+to INT4 with sensitive layers 16-bit, then INT8, then FP8). If nothing passes, Tunyx keeps the configuration that did.
+A rejected configuration never serves traffic. Set `--on-quality-fail reject` to skip step-back.
+
+## Your own test sets
+
+One JSON object per line, with `contains`, `number`, `choice`, `yesno`, `regex` or `json` checks:
 
 ```json
 {"id": "support-1", "kind": "contains", "messages": [{"role": "user", "content": "Refund window is 30 days; bought 10 days ago. Refund? yes/no"}], "expected": ["yes"]}
 {"id": "support-2", "kind": "json", "messages": [{"role": "user", "content": "Extract the order id from 'Order #A-1182 arrived damaged' as JSON {\"order_id\": ...}."}], "expected": {"order_id": "A-1182"}, "response_format": {"type": "json_object"}}
 ```
 
-<Aside type="caution">
-  `tunyx up --skip-quality` turns the gate off. It exists for experiments; don't use it in production.
-</Aside>
+Use it with `--bench file:my_eval.jsonl`, or put `*.jsonl` files in `TUNYX_BENCHMARKS_DIR` to use them by name.
+
+## Run benchmarks on demand
+
+```bash
+tunyx eval NAME --bench gsm8k,mmlu -n 200       # any deployment or OpenAI-compatible URL
+```
+
+`tunyx up --skip-quality` turns the gate off. It exists for experiments; don't use it in production.

@@ -58,6 +58,7 @@ export default defineConfig({
           items: [
             { label: 'Calling your model', slug: 'docs/guides/apis' },
             { label: 'Choosing models', slug: 'docs/guides/models' },
+            { label: 'Optimization history', slug: 'docs/guides/history-report' },
             { label: 'Swap, canary & rollback', slug: 'docs/guides/swap-rollback' },
             { label: 'Live retuning', slug: 'docs/guides/retuning' },
             { label: 'Several models, one machine', slug: 'docs/guides/multi-model' },

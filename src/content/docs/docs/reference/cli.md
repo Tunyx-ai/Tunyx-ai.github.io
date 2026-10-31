@@ -27,7 +27,7 @@ Run `tunyx COMMAND --help` for all options of a command.
 |---|---|
 | `-p, --profile` | `chat` · `agent` · `batch` · `mixed` (default) |
 | `-n, --name` | Deployment / served model name |
-| `-O, --optimize` | `quick` · `standard` (default) · `thorough` |
+| `-O, --optimize` | `quick` · `standard` (default: up to 6 techniques) · `thorough` (up to 30) |
 | `--engine` | Pin `vllm` · `sglang` · `llamacpp` |
 | `--quant` | Pin precision: `none` · `fp8` · `Q4_K_M` · … |
 | `--ctx` | Max context length |
@@ -44,6 +44,9 @@ Run `tunyx COMMAND --help` for all options of a command.
 | `--replace` | Replace an existing deployment with this name |
 | `--engine-arg` | Raw engine flag (repeatable) |
 | `--lora NAME=PATH` | LoRA adapter (repeatable) |
+| `--bench SPEC` | Quality benchmark with thresholds (repeatable), e.g. `gsm8k:min=0.7`, `mmlu:drop=2%` |
+| `--on-quality-fail` | `step-back` (default) or `reject` |
+| `--calibration FILE` | Prompts (JSONL) to calibrate quantized variants on |
 | `-d, --detach` | Don't follow progress |
 
 ## Operate
@@ -60,7 +63,10 @@ Run `tunyx COMMAND --help` for all options of a command.
 | `tunyx tune NAME --mode M [--max-seqs N] [--max-ctx N] [--no-kv-fp8] [--now]` | Live retuning settings |
 | `tunyx proposals` / `approve ID` / `reject ID` | Tuning proposals |
 | `tunyx bench TARGET [-p P] [-c 1,8,32] [--rate 1,2,4] [--seconds S] [-o FILE]` | Benchmark a deployment or URL |
-| `tunyx eval TARGET [--dataset FILE]` | Quality evaluation |
+| `tunyx eval TARGET [--bench gsm8k,mmlu] [-n N] [--dataset FILE]` | Run benchmarks or the built-in checks |
+| `tunyx report NAME [--rev N] [--last N] [-f table\|md\|json\|html] [-o FILE]` | Optimization history |
+| `tunyx quality NAME [--bench SPEC ...] [--on-fail step-back\|reject] [--reset]` | Show or set the quality suite |
+| `tunyx benchmarks [list\|pull NAME\|show NAME]` | Available benchmarks, download, preview |
 | `tunyx usage [--by deployment\|key] [--days N] [--csv FILE]` | Usage and cost |
 
 ## Govern

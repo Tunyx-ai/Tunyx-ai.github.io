@@ -60,6 +60,10 @@ Admin keys are required for changes; viewer keys may read.
 | POST | `/api/deployments/{name}/tune-now` | Evaluate tuning rules now |
 | GET | `/api/deployments/{name}/metrics` | Live and historical metrics |
 | GET | `/api/deployments/{name}/logs` | Engine logs |
+| GET | `/api/deployments/{name}/report?format=json\|md\|html` | Optimization history report |
+| GET | `/api/deployments/{name}/trials` | Raw optimization history records |
+| PUT | `/api/deployments/{name}/quality` | Set the quality suite (benchmarks and thresholds) |
+| GET | `/api/benchmarks` | Available benchmarks |
 | GET | `/api/proposals` | Tuning proposals |
 | POST | `/api/proposals/{id}/approve`, `/reject` | Act on a proposal |
 | GET | `/api/events` | Event stream |

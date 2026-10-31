@@ -28,19 +28,19 @@ tunyx up qwen2.5:7b --profile agent
 ## What you get
 
 <CardGrid>
-  <Card title="Tuned for your workload" icon="rocket">
-    Pick `chat`, `agent`, `batch` or `mixed`. Tunyx benchmarks real configurations on your GPU and keeps the
-    fastest one that meets your latency targets.
+  <Card title="Does the inference engineering" icon="rocket">
+    Calibrated INT4/INT8/FP8/NVFP4 quantization it builds itself, speculative decoding, KV-cache and runtime tuning:
+    each technique measured on your GPU and kept only if it wins.
   </Card>
-  <Card title="Quality checked" icon="approve-check">
-    Every configuration must pass accuracy, tool-calling and JSON tests before it serves traffic. Faster but
-    worse is rejected.
+  <Card title="Gated on your benchmarks" icon="approve-check">
+    GSM8K, MMLU, IFEval and more, or your own tests, each with your thresholds. Break one and Tunyx steps back to a
+    safer option.
   </Card>
-  <Card title="Safe updates" icon="random">
-    `tunyx swap` moves traffic to a new model gradually and rolls back automatically if anything gets worse.
+  <Card title="Every decision on record" icon="document">
+    `tunyx report` shows each technique tried, its speed and benchmark scores, and why it was kept or reverted.
   </Card>
-  <Card title="Keeps itself healthy" icon="heart">
-    Crashed engines restart, idle models free the GPU, and settings retune from real traffic.
+  <Card title="Safe updates, self-healing" icon="random">
+    `tunyx swap` canaries new models with automatic rollback. Crashed engines restart, idle models free the GPU.
   </Card>
   <Card title="Shows what it costs" icon="information">
     Cost per million tokens, utilization, idle spend, and comparison with the API price you pay today.

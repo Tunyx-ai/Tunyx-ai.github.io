@@ -25,14 +25,17 @@ const facts = [
       <span class="eyebrow">Proof, not claims</span>
       <h2 class="h-section">See exactly what tuning bought you.</h2>
       <p class="lede">
-        Tunyx also benchmarks the engine’s stock defaults on the same GPU, model and workload. So the gain is
-        measured, not marketed, and it’s printed right in your status.
+        Every technique Tunyx tries is logged with its speed and benchmark scores, and the engine’s stock defaults are
+        measured on the same GPU for comparison. Share the full report as a web page.
       </p>
-      <div class="status-mock" aria-label="Example status output">
-        <div><span class="m">$</span> tunyx status qwen-agent</div>
-        <div class="dim">Active rev 2: vllm fp8 tp=1 ctx=32768 seqs=128 spec=ngram</div>
-        <div>Tuned config vs stock engine defaults on this workload: <b>+38% goodput</b></div>
-        <div class="dim">Quality 0.95 (reference 0.96) · TTFT p50 58 ms · $0.21/Mtok</div>
+      <div class="status-mock" aria-label="Example optimization report">
+        <div><span class="m">$</span> tunyx report qwen-agent --last 1</div>
+        <div><span class="k">kept</span>      FP8 per-channel        <b>+31% goodput</b>   gsm8k −0.9 pts</div>
+        <div><span class="r">stepped</span>   INT4, calibrated       +47% goodput   <span class="x">gsm8k −28 pts</span></div>
+        <div><span class="k">kept</span>      N-gram speculation     <b>+12% goodput</b>   lossless</div>
+        <div class="dim">reverted  async scheduling       +1.2% (needs +3%)</div>
+        <div>vs stock engine defaults: <b>+38% goodput</b></div>
+        <div class="dim"># example output</div>
       </div>
     </div>
 
@@ -173,6 +176,10 @@ const facts = [
   .status-mock .m { color: var(--mint-400); }
   .status-mock .dim { color: var(--fg-3); }
   .status-mock b { color: var(--mint-300); font-weight: 600; }
+  .status-mock .k { color: var(--mint-400); }
+  .status-mock .r { color: var(--warn); }
+  .status-mock .x { color: #ff9c9c; }
+  .status-mock div { white-space: pre; }
 
   .chart { margin: 0; padding: 22px 22px 18px; }
   figcaption { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }

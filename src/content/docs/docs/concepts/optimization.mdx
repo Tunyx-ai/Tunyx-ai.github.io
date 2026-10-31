@@ -1,48 +1,89 @@
 ---
 title: Optimization
-description: How Tunyx searches for the fastest configuration that meets your targets, and proves the gain.
+description: How Tunyx does the work of an inference engineer, one measured technique at a time.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
+Tunyx works like an inference engineer: get a good base configuration first, then try one optimization technique at
+a time, keep only what is measurably faster and still passes every quality check, and undo the rest.
+
 ## Modes
 
-| Mode | What it tries | When to use |
+| Mode | What it does | When to use |
 |---|---|---|
-| `quick` | One validated config | Fast iteration, small GPUs |
-| `standard` (default) | 3–5 configs plus refinement around the winner | Most deployments |
-| `thorough` | 6–10 configs | Production models that will run for a long time |
+| `quick` | Validates one configuration | Fast iteration, small GPUs |
+| `standard` (default) | 3–5 base configurations, then up to 6 optimization techniques | Most deployments |
+| `thorough` | 6–10 base configurations, then every applicable technique (up to 30) | Production models that will run for a long time |
 
 ```bash
 tunyx up MODEL -O thorough
 ```
 
-Whatever the mode, the endpoint is live as soon as the first config validates. Use `--wait-optimal` to wait for
-the full search instead.
+The endpoint is live as soon as the first configuration validates. The rest runs in the background. Use
+`--wait-optimal` to wait for the full search instead.
 
-## What Tunyx varies
+## The techniques
 
-- **Engine:** vLLM, SGLang, llama.cpp or MLX, whichever is installed and supports the model.
-- **Precision:** full, FP8 weights, FP8 KV cache, or GGUF quantizations.
-- **Context length:** derived from available KV-cache memory.
-- **Batching:** `max_num_seqs` and prefill chunk size, refined around the winner.
-- **Speculative decoding:** n-gram candidates for chat and agent workloads.
-- **GPU layout:** tensor parallelism vs replicas on multi-GPU machines.
+| Category | Techniques | Quality risk |
+|---|---|---|
+| **Precision, applied by the engine** | FP8 per-channel / block-wise / per-tensor; INT8 weight-only (GPUs without FP8); MXFP8 and NVFP4 (Blackwell) | Lossy: always quality-gated |
+| **Precision, built by Tunyx** | Calibrated INT4 (GPTQ); INT4 with sensitive layers kept 16-bit; INT8 W8A8 (SmoothQuant + GPTQ); calibrated NVFP4 (Blackwell) | Lossy: always quality-gated |
+| **Memory** | FP8 KV cache; KV-cache offloading to CPU memory for long-context agents | FP8 KV is gated |
+| **Speculative decoding** | The model's own MTP heads; published EAGLE-3 heads; an automatically paired small draft model; suffix decoding; n-gram prompt lookup | None: output is identical |
+| **Engine runtime** | Performance mode for your workload; async scheduling; maximum compilation (`-O3`); CUDA graphs; alternative attention kernels | None |
+| **Batching** | Batch size up or down; prefill chunk size up or down | None |
+| **Parallelism** | Expert parallelism and dual-batch overlap for MoE models on several GPUs | None |
 
-## How a winner is chosen
+Tunyx only tries what applies to your model, engine and hardware. The order follows your workload: speculation first
+for `chat`, precision first for `batch`, suffix decoding and KV memory first for `agent`.
 
-1. Each candidate runs the profile's traffic at several concurrency levels, through the gateway, so the overhead
-   users see is included.
-2. It must meet the latency targets and pass the [quality gate](/docs/concepts/quality-gates/).
-3. Among those, the one with the most **goodput** wins: tokens per second from requests that met the targets.
-4. It must beat the current config by at least 5%, and be statistically better rather than noisily ahead.
+## How a technique is judged
 
-Candidates that run out of memory are stepped down automatically. Engines that can't load the model are skipped.
+1. It runs your workload benchmark and your full [quality suite](/docs/concepts/quality-gates/).
+2. It is **kept** only if goodput improves by at least 3% (5% for lossy techniques, which must justify their quality
+   risk) and every threshold still passes. Otherwise it is **reverted**.
+3. Kept techniques stack: the next technique is tried on top of the current best.
+4. A lossy technique that breaks a threshold is **stepped back** to the next less aggressive option instead of being
+   dropped.
+
+```
+INT4 -> INT4 with sensitive layers 16-bit -> INT8 W8A8 -> FP8 per-channel
+NVFP4 dynamic -> NVFP4 calibrated -> MXFP8 -> FP8 per-channel
+```
+
+Turn step-back off with `--on-quality-fail reject`.
+
+Every attempt, with its metrics and the reason for the decision, is in the [history report](/docs/guides/history-report/).
+
+## Quantization Tunyx builds itself
+
+For the "built" precisions, Tunyx produces its own quantized model from the original weights with
+[llm-compressor](https://github.com/vllm-project/llm-compressor), calibrated on representative conversations. Built
+variants are cached per recipe and calibration data, so nothing is built twice, and each records how it was made.
+
+Calibrate on your own traffic for the best results:
+
+```bash
+tunyx up MODEL --calibration my_prompts.jsonl   # one {"messages": [...]} per line
+```
+
+llm-compressor pins its own library versions, so it gets its own environment:
+
+```bash
+uv venv quant-env && uv pip install --python quant-env/bin/python llmcompressor
+export TUNYX_QUANT_PYTHON=$PWD/quant-env/bin/python
+```
+
+<Aside>
+  A `quant-env` next to your vLLM environment is found automatically. Without it, Tunyx still tries every
+  engine-applied precision and skips the built ones.
+</Aside>
 
 ## Proof: comparison with stock defaults
 
-In `standard` and `thorough` modes, Tunyx also benchmarks the engine's **untuned defaults** on the same GPU
-share and workload. `tunyx status` then shows what tuning bought you:
+In `standard` and `thorough` modes, Tunyx also benchmarks the engine's **untuned defaults** on the same GPU share and
+workload, so `tunyx status` shows what tuning bought you:
 
 ```txt
 Tuned config vs stock engine defaults on this workload: +38% goodput
@@ -50,20 +91,15 @@ Tuned config vs stock engine defaults on this workload: +38% goodput
 
 ## Tuning cache
 
-Results are remembered per model and hardware, so redeploying the same model skips the search. Fine-tunes of the
-same base architecture reuse each other's results as a starting point. Use `--fresh` to ignore the cache.
+Results are remembered per model and hardware, so redeploying the same model skips the search. Fine-tunes of the same
+base architecture reuse each other's results as a starting point. Use `--fresh` to ignore the cache.
 
 ## Busy GPUs and the optimize window
 
 Background optimization never takes a busy single-GPU deployment offline for long. When traffic is waiting, the
-search is shortened, and a config that meets its targets is never replaced by one that doesn't. To allow full
+search is shortened, and a configuration that meets its targets is never replaced by one that doesn't. To allow full
 re-optimization during quiet hours:
 
 ```bash
 tunyx config set optimize_window 02:00-05:00
 ```
-
-<Aside>
-  Tunyx also waits at least five minutes after a model starts serving before restarting it for optimization, so
-  users who just started using it aren't interrupted.
-</Aside>

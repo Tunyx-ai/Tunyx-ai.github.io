@@ -29,6 +29,9 @@ tunyx bench http://other-host/v1 -p chat -o results.json
 ## Quality evaluation
 
 ```bash
-tunyx eval support                         # built-in 68-item evaluation
-tunyx eval support --dataset my_eval.jsonl # your own cases
+tunyx eval support                          # built-in 68-item evaluation
+tunyx eval support --bench gsm8k,mmlu -n 200 # real benchmarks, with confidence intervals
+tunyx eval support --dataset my_eval.jsonl  # your own cases
 ```
+
+To make benchmarks a gate for every optimization, see [Quality gates](/docs/concepts/quality-gates/).

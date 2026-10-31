@@ -27,20 +27,22 @@ const raw = `from openai import OpenAI\n\nclient = OpenAI(base_url="http://local
             <div><dt>Must pass</dt><dd>tool calls · JSON</dd></div>
           </dl>
         </div>
-        <h3>Tuned for your workload, not a benchmark</h3>
-        <p>Pick chat, agent, batch or mixed. Every config is measured against your traffic shape and latency targets.</p>
+        <h3>Tuned for your workload, not a leaderboard</h3>
+        <p>Pick chat, agent, batch or mixed. Every technique is measured against your traffic shape and latency targets,
+          and kept only if it wins.</p>
       </article>
 
       <!-- Quality gates -->
       <article class="card f s3 reveal">
         <div class="viz gate" aria-hidden="true">
-          <div class="row"><span class="ok">✓</span>Reasoning &amp; knowledge<span class="sc">0.94</span></div>
-          <div class="row"><span class="ok">✓</span>JSON &amp; structured output<span class="sc">1.00</span></div>
-          <div class="row"><span class="ok">✓</span>Instruction following<span class="sc">0.92</span></div>
-          <div class="row bad"><span class="no">✕</span>Tool calls (int4 build)<span class="sc">71% &lt; 75%</span></div>
+          <div class="row"><span class="ok">✓</span>MMLU · max drop 2 pts<span class="sc">−0.8 pts</span></div>
+          <div class="row"><span class="ok">✓</span>IFEval · max drop 3 pts<span class="sc">−1.1 pts</span></div>
+          <div class="row bad"><span class="no">✕</span>GSM8K ≥ 70% · INT4 build<span class="sc">58% → stepped back</span></div>
+          <div class="row"><span class="ok">✓</span>GSM8K ≥ 70% · INT8 build<span class="sc">73%</span></div>
         </div>
-        <h3>Quality gates before anything serves</h3>
-        <p>68 checks, compared against full precision. A faster config that gives worse answers never reaches users.</p>
+        <h3>Gated on the benchmarks you choose</h3>
+        <p>GSM8K, MMLU, IFEval and more, or your own test set, each with your thresholds. Break one and Tunyx steps back to
+          a safer option instead of serving worse answers.</p>
       </article>
 
       <!-- Canary -->

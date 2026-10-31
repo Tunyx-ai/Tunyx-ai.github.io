@@ -2,8 +2,8 @@
 const steps = [
   { k: 'Plan', title: 'Reads hardware and model', body: 'Picks engine, precision, context and layout for your GPUs, and explains why.', cmd: 'tunyx plan' },
   { k: 'Serve', title: 'Live in one model load', body: 'The safest config that fits serves as soon as it passes its checks.', cmd: 'tunyx up' },
-  { k: 'Optimize', title: 'Measures real candidates', body: 'Benchmarks faster configs against your workload in the background.', cmd: '-O standard' },
-  { k: 'Validate', title: 'Promotes only what passes', body: 'Latency targets and the quality gate, or it keeps the safe config and tells you why.', cmd: 'quality gate' },
+  { k: 'Optimize', title: 'Does the engineering', body: 'Quantization it builds itself, speculative decoding, runtime tuning: one technique at a time, measured.', cmd: '-O thorough' },
+  { k: 'Validate', title: 'Gates on your benchmarks', body: 'GSM8K, MMLU or your own tests, with your thresholds. Break one and it steps back.', cmd: '--bench gsm8k' },
   { k: 'Operate', title: 'Keeps it healthy', body: 'Self-heals, sleeps idle models, canaries changes and retunes from traffic.', cmd: 'tunyx status' },
 ];
 ---
