@@ -33,7 +33,17 @@ tunyx doctor
 
 ## Install an engine
 
-Tunyx runs models through an inference engine. Install at least one:
+Tunyx runs models through an inference engine. The quickest way installs the best one for this machine into its
+own environment, where Tunyx finds it automatically:
+
+```bash
+tunyx setup engine                 # or: tunyx setup engine vllm | sglang | surogate | mlx | llamacpp
+```
+
+On NVIDIA Ada, Hopper or Blackwell GPUs you can add [Surogate](https://github.com/invergent-ai/surogate), an engine
+with native CUDA kernels. Tunyx measures it next to vLLM and SGLang on your workload and keeps whichever wins.
+
+To install engines yourself instead:
 
 <Tabs syncKey="hw">
   <TabItem label="NVIDIA GPU">

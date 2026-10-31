@@ -20,6 +20,9 @@ Run `tunyx COMMAND --help` for all options of a command.
 | `tunyx models` | Short model names |
 | `tunyx hw` | Detected hardware |
 | `tunyx doctor` | Diagnose setup problems and explain fixes |
+| `tunyx fit MODEL [-p P]` | Will it fit on this machine, what you get, and what fits instead |
+| `tunyx launch claude\|codex [--model NAME]` | Start a coding agent wired to your deployment |
+| `tunyx setup engine [ENGINE]` | Install the best engine for this machine (or vllm, sglang, surogate, mlx, llamacpp) |
 | `tunyx setup quantization` | Install the optional toolkit for building calibrated quantized variants |
 | `tunyx trial --from URL [--objective O] [--quality-gate FILE] [-o FILE] [--fail-if-worse]` | Measure an existing endpoint and Tunyx on the same workload; ROI report |
 | `tunyx recommend [-p P] [--objective O] [--current M] [--evaluate N] [--apply]` | Which model for an objective on this hardware |

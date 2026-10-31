@@ -59,6 +59,13 @@ tunyx logs NAME --events   # Tunyx's decisions
 | `--replace` | Redeploy under an existing name |
 | `-d, --detach` | Return immediately instead of following progress |
 
+## Will it fit? Use it from a coding agent
+
+```bash
+tunyx fit qwen2.5:32b -p agent     # fits or not, with what context and concurrency, or what fits instead
+tunyx launch claude                # Claude Code on your deployment (also: tunyx launch codex)
+```
+
 ## Stop, start, delete
 
 ```bash

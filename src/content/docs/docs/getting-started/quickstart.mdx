@@ -30,7 +30,14 @@ This guide takes you from nothing to a tuned, quality-checked endpoint you can c
    During the private beta the repository is invite-only. Ask us for access if the install fails with a
    permission error.
 
-2. **Install an engine.** Tunyx drives a proven inference engine for you. Install the one for your hardware:
+2. **Install an engine.** One command picks and installs the right one for your hardware, in its own
+   environment:
+
+   ```bash
+   tunyx setup engine
+   ```
+
+   Or install it yourself:
 
    <Tabs syncKey="hw">
      <TabItem label="NVIDIA GPU">
