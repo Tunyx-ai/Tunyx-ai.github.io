@@ -62,6 +62,8 @@ export default defineConfig({
             { label: 'Swap, canary & rollback', slug: 'docs/guides/swap-rollback' },
             { label: 'Live retuning', slug: 'docs/guides/retuning' },
             { label: 'Several models, one machine', slug: 'docs/guides/multi-model' },
+            { label: 'Migration trial & ROI', slug: 'docs/guides/migration-trial' },
+            { label: 'Your real workload', slug: 'docs/guides/workload' },
             { label: 'Cost & economics', slug: 'docs/guides/economics' },
             { label: 'Dashboard & monitoring', slug: 'docs/guides/monitoring' },
             { label: 'Benchmarking', slug: 'docs/guides/benchmarking' },

@@ -49,7 +49,8 @@ tunyx logs NAME --events   # Tunyx's decisions
 | `--ctx 16384` | Fix the context length (default: the most that fits) |
 | `--engine`, `--quant` | Pin the engine (`vllm`, `sglang`, `llamacpp`) or precision (`none`, `fp8`, `Q4_K_M`, …) |
 | `--wait-optimal` | Don't serve until optimization finishes |
-| `--fresh` | Ignore cached tuning results |
+| `--manual-apply` | Propose the background optimization's result instead of switching automatically |
+| `--fresh` | Ignore remembered settings; run a full optimization |
 | `--idle-ttl 900` | Sleep after 15 idle minutes; wakes automatically on the next request |
 | `--priority 10` | Higher-priority models are never evicted for lower ones |
 | `--tuning` | `off`, `propose` (default) or `auto` live retuning |
@@ -63,7 +64,8 @@ tunyx logs NAME --events   # Tunyx's decisions
 ```bash
 tunyx stop NAME     # free the GPU, keep the configuration
 tunyx start NAME    # start again with the last validated config
-tunyx down NAME     # delete the deployment and its history
+tunyx down NAME     # delete the deployment; the machine remembers its best settings
+tunyx down NAME --purge   # also forget them and delete the variants Tunyx built
 ```
 
 <Aside type="tip">

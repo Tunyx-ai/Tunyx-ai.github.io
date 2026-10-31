@@ -20,6 +20,9 @@ Run `tunyx COMMAND --help` for all options of a command.
 | `tunyx models` | Short model names |
 | `tunyx hw` | Detected hardware |
 | `tunyx doctor` | Diagnose setup problems and explain fixes |
+| `tunyx setup quantization` | Install the optional toolkit for building calibrated quantized variants |
+| `tunyx trial --from URL [--objective O] [--quality-gate FILE] [-o FILE] [--fail-if-worse]` | Measure an existing endpoint and Tunyx on the same workload; ROI report |
+| `tunyx recommend [-p P] [--objective O] [--current M] [--evaluate N] [--apply]` | Which model for an objective on this hardware |
 
 ### `tunyx up` options
 
@@ -39,7 +42,8 @@ Run `tunyx COMMAND --help` for all options of a command.
 | `--revision` | Hugging Face revision |
 | `--trust-remote-code` | Allow model code from the repository |
 | `--skip-quality` | Skip the quality gate (not recommended) |
-| `--fresh` | Ignore cached tuning results |
+| `--fresh` | Ignore remembered settings and cached results |
+| `--manual-apply` | Propose background optimization results instead of switching automatically |
 | `--wait-optimal` | Serve only after optimization finishes |
 | `--replace` | Replace an existing deployment with this name |
 | `--engine-arg` | Raw engine flag (repeatable) |
@@ -57,10 +61,14 @@ Run `tunyx COMMAND --help` for all options of a command.
 | `tunyx status NAME` | Config and rationale, benchmarks, quality, economics, revisions |
 | `tunyx logs NAME [-f] [--events] [--rev N] [--replica N]` | Engine logs or Tunyx events |
 | `tunyx stop NAME` / `start NAME` | Free the GPU / start again |
-| `tunyx down NAME` | Delete a deployment and its history |
-| `tunyx reoptimize NAME [--profile P]` | Re-run optimization |
+| `tunyx down NAME [--purge]` | Delete a deployment; `--purge` also forgets the model's remembered settings and built variants |
+| `tunyx registry [list\|forget MODEL]` | Models this machine remembers |
+| `tunyx artifacts [ls\|rm ID\|gc]` | Built variants and their disk use |
+| `tunyx reoptimize NAME [--profile P] [--from-traffic]` | Re-run optimization, optionally against real traffic |
+| `tunyx workload NAME [--reset]` | The learned shape of real traffic |
+| `tunyx outcomes NAME [--days N]` | Success rate and cost per successful task |
 | `tunyx rollback NAME [--to REV]` | Roll back or abort a canary |
-| `tunyx tune NAME --mode M [--max-seqs N] [--max-ctx N] [--no-kv-fp8] [--now]` | Live retuning settings |
+| `tunyx tune NAME [--mode M] [--apply auto\|manual] [--max-seqs N] [--max-ctx N] [--no-kv-fp8] [--now]` | Live retuning, and automatic or manual switching to background results |
 | `tunyx proposals` / `approve ID` / `reject ID` | Tuning proposals |
 | `tunyx bench TARGET [-p P] [-c 1,8,32] [--rate 1,2,4] [--seconds S] [-o FILE]` | Benchmark a deployment or URL |
 | `tunyx eval TARGET [--bench gsm8k,mmlu] [-n N] [--dataset FILE]` | Run benchmarks or the built-in checks |

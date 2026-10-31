@@ -1,0 +1,83 @@
+---
+title: Migration trial & ROI
+description: Measure your existing vLLM or OpenAI-compatible endpoint and Tunyx on the same workload before you switch.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Already serving with vLLM, SGLang or another OpenAI-compatible server? Prove the gain on your own workload and
+evals before changing anything:
+
+```bash
+tunyx trial --from http://my-vllm:8000 --objective lowest-cost --quality-gate ./evals.jsonl -o roi.html
+```
+
+<Steps>
+
+1. **Discover.** Tunyx reads the served model, engine, version and the engine flags the endpoint exposes.
+
+2. **Measure the existing endpoint** with the workload benchmark and your quality gate.
+
+3. **Deploy the same model with Tunyx** on this machine, with the same GPU memory share, and let it optimize.
+
+4. **Measure Tunyx the same way** and write the report: goodput, throughput, latency, quality on your evals
+   (paired against the existing endpoint's answers), cost per million tokens, and the monthly difference.
+
+</Steps>
+
+The trial deployment is removed afterwards, but the machine remembers its optimized configuration, so migrating
+later starts optimized.
+
+## Your eval file
+
+One JSON object per line; only the messages and the expected answer are required:
+
+```json
+{"messages": [{"role": "user", "content": "Capital of France? One word."}], "expected": "Paris"}
+{"messages": [{"role": "user", "content": "What is 12 * 7? Answer with the number."}], "expected": 84}
+```
+
+Text answers are checked with "contains", numbers by value. You can also pass public benchmarks:
+`--quality-gate gsm8k --quality-gate mmlu:n=200`.
+
+## Options
+
+| Option | What it does |
+|---|---|
+| `--objective` | `lowest-cost` (default), `highest-throughput`, `lowest-latency` or `balanced` |
+| `-p, --profile` | Workload shape both endpoints are measured with (`chat`, `agent`, `batch`, `mixed`) |
+| `--current-hourly-cost` | What the existing endpoint's GPUs cost per hour (default: same as this machine) |
+| `--monthly-tokens` | Output tokens per month, for the savings estimate |
+| `--model` | Hugging Face id, if the endpoint doesn't reveal it |
+| `--api-key` | Key for the existing endpoint |
+| `--keep` | Keep the Tunyx deployment afterwards |
+| `-o roi.html` | Report as `.md`, `.html` or `.json` |
+| `--fail-if-worse` | Exit 1 unless Tunyx wins (for CI) |
+
+## In CI
+
+Gate a pull request that changes a model or a setting on the measured result:
+
+```yaml
+- run: tunyx trial --from ${{ vars.CURRENT_ENDPOINT }} --quality-gate evals.jsonl -o roi.md --fail-if-worse
+- run: gh pr comment ${{ github.event.number }} --body-file roi.md
+```
+
+<Aside type="caution">
+  Run the trial on hardware like the existing endpoint's, with a free GPU for the Tunyx deployment. The report
+  compares both on the same hardware; numbers from different GPUs aren't comparable.
+</Aside>
+
+## Which model? `tunyx recommend`
+
+```bash
+tunyx recommend -p agent --objective lowest-cost              # estimates in seconds, no downloads
+tunyx recommend -p agent --current qwen2.5:7b --evaluate 3 \
+                --quality-gate ./evals.jsonl                  # measure the top 3 on this machine
+```
+
+Candidates are planned for this machine from their configuration alone and ranked by how many bytes they read
+per generated token. `--evaluate N` deploys, optimizes and measures the top N on your workload and quality gate,
+then recommends the best on your objective among those that pass; `--apply` deploys it. A different **model
+family** changes behaviour benchmarks don't fully capture (tone, formatting, tool-call style), so with
+`--current` it is only applied with `--allow-family-switch`.

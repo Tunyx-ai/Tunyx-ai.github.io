@@ -10,9 +10,11 @@ SGLang, llama.cpp or MLX) and does the work an experienced inference engineer wo
 them, check quality, roll changes out safely and keep everything running.
 
 ```txt
-plan ─► download ─► serve the safest config ─► optimize in the background ─► promote only what passes
-                                                                                      │
-                     retune from real traffic ◄─ monitor ◄─ serve (one stable endpoint) ◄┘
+plan ─► serve the best config that fits (in seconds if this machine knows the model)
+            │
+            └─► optimize in the background ─► switch automatically, or propose for your approval
+                                                                      │
+                     retune from real traffic ◄─ monitor ◄─ serve ◄───┘   (one stable endpoint throughout)
 ```
 
 <Steps>
@@ -22,18 +24,20 @@ plan ─► download ─► serve the safest config ─► optimize in the backg
    tensor-parallel layout, replicas and context length. Context is derived from the memory left after weights,
    never guessed. Run `tunyx plan MODEL` to see the plan and reasons without launching anything.
 
-2. **Serve first.** Starts the highest-fidelity configuration that fits, validates it and opens the endpoint, in
-   one model load.
+2. **Serve first.** Starts the highest-fidelity configuration that fits, checks that it answers a real request
+   and opens the endpoint. Downtime is only as long as the engine takes to start. If this machine has optimized
+   the model before, it starts straight away with the best settings it found then.
 
-3. **Optimize.** In the background, benchmarks faster candidates against your
-   [workload profile](/docs/concepts/profiles/). On multi-GPU machines, candidates run in parallel, one per GPU.
+3. **Optimize in the background.** A background job benchmarks faster candidates against your
+   [workload profile](/docs/concepts/profiles/), with the serving config measured in the same run so the
+   comparison is fair. On multi-GPU machines, candidates run in parallel, one per GPU.
 
-4. **Validate.** Each candidate must meet the profile's latency targets and pass the
+4. **Validate.** Each candidate must meet the profile's latency targets and pass every threshold in your
    [quality gate](/docs/concepts/quality-gates/).
 
-5. **Promote or fall back.** The winner replaces the current config only if it's at least 5% better and
-   statistically ahead, not just ahead by noise. If nothing passes, Tunyx keeps a conservative safe config and
-   tells you why.
+5. **Switch or propose.** The winner replaces the serving config only if it's clearly better and statistically
+   ahead, not just ahead by noise. By default the switch is automatic, with a canary and automatic rollback. With
+   `--manual-apply` it becomes a proposal you approve. If nothing beats the serving config, nothing changes.
 
 6. **Operate.** Restarts crashed engines, puts idle models to sleep, rolls out updates with canary and
    automatic rollback, and proposes retunes as traffic changes.
@@ -50,6 +54,20 @@ Applications always call the same URL. Behind it, the gateway:
 - splits traffic during canaries;
 - holds requests briefly while a crashed engine restarts or a sleeping model wakes;
 - records latency, tokens and cost for every request.
+
+## The model registry
+
+Each machine remembers what it learned about every model it has optimized: the best configuration, the quality
+reference results, and the variants it built. Deleting a deployment keeps this, so deploying the model again
+starts optimized in the time it takes the engine to start. Fine-tunes of a known architecture start with its
+performance settings. Launch workarounds the machine needed once (for example, no CUDA compiler installed) apply
+from the first launch afterwards.
+
+```bash
+tunyx registry                 # what this machine remembers
+tunyx down NAME --purge        # delete a deployment and forget its model
+tunyx registry forget MODEL    # forget one model
+```
 
 ## Revisions
 

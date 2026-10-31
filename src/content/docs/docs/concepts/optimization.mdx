@@ -27,8 +27,8 @@ The endpoint is live as soon as the first configuration validates. The rest runs
 
 | Category | Techniques | Quality risk |
 |---|---|---|
-| **Precision, applied by the engine** | FP8 per-channel / block-wise / per-tensor; INT8 weight-only (GPUs without FP8); MXFP8 and NVFP4 (Blackwell) | Lossy: always quality-gated |
-| **Precision, built by Tunyx** | Calibrated INT4 (GPTQ); INT4 with sensitive layers kept 16-bit; INT8 W8A8 (SmoothQuant + GPTQ); calibrated NVFP4 (Blackwell) | Lossy: always quality-gated |
+| **Precision, applied by the engine** | FP8 per-channel / block-wise / per-tensor; MXFP8 (Blackwell); INT8 weight-only and dynamic NVFP4 for MoE experts | Lossy: always quality-gated |
+| **Precision, built by Tunyx** | Calibrated INT4 (GPTQ); INT4 with sensitive layers kept 16-bit; INT8 W8A8 (SmoothQuant + GPTQ); NVFP4 weight-only and NVFP4 W4A4 (Blackwell; W4A4 for 3B+ models) | Lossy: always quality-gated |
 | **Memory** | FP8 KV cache; KV-cache offloading to CPU memory for long-context agents | FP8 KV is gated |
 | **Speculative decoding** | The model's own MTP heads; published EAGLE-3 heads; an automatically paired small draft model; suffix decoding; n-gram prompt lookup | None: output is identical |
 | **Engine runtime** | Performance mode for your workload; async scheduling; maximum compilation (`-O3`); CUDA graphs; alternative attention kernels | None |
@@ -42,14 +42,15 @@ for `chat`, precision first for `batch`, suffix decoding and KV memory first for
 
 1. It runs your workload benchmark and your full [quality suite](/docs/concepts/quality-gates/).
 2. It is **kept** only if goodput improves by at least 3% (5% for lossy techniques, which must justify their quality
-   risk) and every threshold still passes. Otherwise it is **reverted**.
+   risk), and by more than the measurement noise of the two runs (95% confidence), and every threshold still passes. Otherwise it is
+   **reverted**. Techniques that can't change outputs (batching, scheduling, compilation) skip the quality suite.
 3. Kept techniques stack: the next technique is tried on top of the current best.
 4. A lossy technique that breaks a threshold is **stepped back** to the next less aggressive option instead of being
    dropped.
 
 ```
 INT4 -> INT4 with sensitive layers 16-bit -> INT8 W8A8 -> FP8 per-channel
-NVFP4 dynamic -> NVFP4 calibrated -> MXFP8 -> FP8 per-channel
+NVFP4 W4A4 -> NVFP4 weight-only -> MXFP8          (Blackwell)
 ```
 
 Turn step-back off with `--on-quality-fail reject`.
@@ -68,16 +69,19 @@ Calibrate on your own traffic for the best results:
 tunyx up MODEL --calibration my_prompts.jsonl   # one {"messages": [...]} per line
 ```
 
-llm-compressor pins its own library versions, so it gets its own environment:
+llm-compressor pins its own library versions, so it gets its own environment. One command sets it up, and Tunyx
+finds it automatically:
 
 ```bash
-uv venv quant-env && uv pip install --python quant-env/bin/python llmcompressor
-export TUNYX_QUANT_PYTHON=$PWD/quant-env/bin/python
+tunyx setup quantization     # creates ~/.tunyx/envs/quant-env with llmcompressor
+tunyx doctor                 # confirms calibrated quantization is available
 ```
 
 <Aside>
-  A `quant-env` next to your vLLM environment is found automatically. Without it, Tunyx still tries every
-  engine-applied precision and skips the built ones.
+  Without it, Tunyx still tries every engine-applied precision and skips the built ones. Builds run in their own
+  process on the GPU they were given, and a variant is reused only if it came from exactly the same weights,
+  recipe, calibration data and toolkit versions. `tunyx artifacts` shows built variants and their disk use;
+  `tunyx artifacts gc` deletes unused ones.
 </Aside>
 
 ## Proof: comparison with stock defaults
@@ -89,10 +93,29 @@ workload, so `tunyx status` shows what tuning bought you:
 Tuned config vs stock engine defaults on this workload: +38% goodput
 ```
 
-## Tuning cache
+## Background optimization: automatic or manual switching
 
-Results are remembered per model and hardware, so redeploying the same model skips the search. Fine-tunes of the same
-base architecture reuse each other's results as a starting point. Use `--fresh` to ignore the cache.
+`tunyx up` serves first and optimizes afterwards. When the background job finds a configuration that is clearly
+faster and passes every threshold:
+
+- **automatic (default):** Tunyx switches to it with a canary and automatic rollback;
+- **manual:** it becomes a proposal with the measured gain, and you decide.
+
+```bash
+tunyx up MODEL --manual-apply      # propose instead of switching
+tunyx tune NAME --apply manual     # change it later (or --apply auto)
+tunyx proposals NAME               # what's waiting
+tunyx approve ID                   # apply it (canary + automatic rollback)
+```
+
+A proposal expires if the serving configuration changes first. With `TUNYX_REQUIRE_APPROVAL=1`, results are always
+proposals.
+
+## Remembered per machine
+
+Results are kept in the machine's [model registry](/docs/concepts/how-it-works/#the-model-registry), and survive
+`tunyx down`. Redeploying the same model starts in its best configuration; fine-tunes of the same architecture
+start with its performance settings. `--fresh` ignores what's remembered; `tunyx down NAME --purge` forgets it.
 
 ## Busy GPUs and the optimize window
 

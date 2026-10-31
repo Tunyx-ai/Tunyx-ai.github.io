@@ -5,8 +5,10 @@ description: Tunyx turns your GPUs into fast, quality-checked, OpenAI-compatible
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-**Tunyx is a self-optimizing inference control plane.** Point it at a model, tell it your workload, and get a
-fast, validated, OpenAI-compatible endpoint on your own hardware that stays healthy.
+**Tunyx is an autonomous inference optimization platform** for teams that want to run AI on their own
+infrastructure without an inference engineering team. Point it at a model, tell it your workload, and get a fast,
+validated, OpenAI-compatible endpoint on your own hardware: live in minutes, optimized in the background, and
+kept healthy.
 
 It sits between your applications and an inference engine (vLLM, SGLang, llama.cpp or MLX). It decides how to
 run the engine for *your* workload, proves the result with benchmarks and a quality gate, and operates it day
@@ -38,6 +40,10 @@ tunyx up qwen2.5:7b --profile agent
   </Card>
   <Card title="Every decision on record" icon="document">
     `tunyx report` shows each technique tried, its speed and benchmark scores, and why it was kept or reverted.
+  </Card>
+  <Card title="Proof before you switch" icon="seti:pipeline">
+    `tunyx trial --from http://your-vllm:8000` measures your current endpoint and Tunyx on the same workload and
+    evals, and reports the cost difference. `tunyx recommend` picks a model for your objective.
   </Card>
   <Card title="Safe updates, self-healing" icon="random">
     `tunyx swap` canaries new models with automatic rollback. Crashed engines restart, idle models free the GPU.

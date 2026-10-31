@@ -17,7 +17,7 @@ Everything has a default. Settings marked **runtime** can also be changed on a r
 | `TUNYX_VIEWER_KEYS` | – | read-only keys (dashboard, `/metrics`, GET `/api`) |
 | `TUNYX_KEY_SCOPES` | – | deployments each named key may use, e.g. `team-a=chat,coder;team-b=*` |
 | `TUNYX_KEY_LIMITS` | – | per-team limits, e.g. `team-a:rpm=60,tpm=200000,concurrency=8;*:rpm=600` (429 + `Retry-After`) |
-| `TUNYX_REQUIRE_APPROVAL` | `0` | four-eyes: changes become requests a different admin approves (`tunyx changes`) |
+| `TUNYX_REQUIRE_APPROVAL` | `0` | four-eyes: changes become requests a different admin approves (`tunyx changes`); background optimization results are always proposals |
 | `TUNYX_TLS_CERT` / `TUNYX_TLS_KEY` / `TUNYX_TLS_CLIENT_CA` | – | HTTPS, and mutual TLS with a client CA |
 | `TUNYX_CORS_ORIGINS` | – | browser origins allowed to call the API |
 
@@ -72,7 +72,10 @@ Everything has a default. Settings marked **runtime** can also be changed on a r
 | `TUNYX_GPU_MEMORY_GB` | – | override detected per-GPU memory (exotic environments) |
 | `TUNYX_VLLM_PYTHON` / `TUNYX_SGLANG_PYTHON` / `TUNYX_MLX_PYTHON` / `TUNYX_LLAMACPP_SERVER` | – | engines installed in their own environments |
 | `TUNYX_MAX_PASSES` | – | cap on optimization techniques tried per run (bounds optimization time; `0` = base configs only) |
-| `TUNYX_QUANT_PYTHON` | `quant-env` next to the vLLM environment, if present | Python with llm-compressor, used to build calibrated quantized variants |
+| `optimize_budget_gpu_hours` (`TUNYX_OPTIMIZE_BUDGET`) **runtime** | – | GPU-hours background optimization may use per deployment in any 7 days |
+| `TUNYX_CAPTURE_PROMPTS` | `0` | opt-in fraction of conversations kept (redacted) for benchmarks and calibration |
+| `TUNYX_CAPTURE_MAX` / `TUNYX_CAPTURE_RETENTION_DAYS` | `2000` / `7` | cap and age limit on kept samples |
+| `TUNYX_QUANT_PYTHON` | the environment `tunyx setup quantization` created, else `quant-env` next to the vLLM environment | Python with llm-compressor, used to build calibrated quantized variants |
 | `TUNYX_BENCHMARKS_DIR` | – | directory of `*.jsonl` eval sets usable as benchmarks by file name |
 | `TUNYX_ALLOW_CODE_EVAL` | `0` | allow code benchmarks (HumanEval, MBPP), which run model-written code in a limited subprocess |
 | `HF_TOKEN` | – | gated/private Hugging Face models |

@@ -51,9 +51,9 @@ Admin keys are required for changes; viewer keys may read.
 | GET | `/api/profiles` | Workload profiles |
 | POST | `/api/plan` | Plan a deployment without launching |
 | GET / POST | `/api/deployments` | List / create deployments |
-| GET / PATCH / DELETE | `/api/deployments/{name}` | Read / update / delete one |
+| GET / PATCH / DELETE | `/api/deployments/{name}` | Read / update / delete one (`DELETE ...?purge=true` also forgets the model) |
 | POST | `/api/deployments/{name}/swap` | Swap model (canary + rollback) |
-| POST | `/api/deployments/{name}/reoptimize` | Re-run optimization |
+| POST | `/api/deployments/{name}/reoptimize` | Re-run optimization (`{"from_traffic": true}` for real traffic) |
 | POST | `/api/deployments/{name}/rollback` | Roll back or abort a canary |
 | POST | `/api/deployments/{name}/stop`, `/start` | Stop / start |
 | PATCH | `/api/deployments/{name}/tuning` | Retuning mode and bounds |
@@ -62,7 +62,12 @@ Admin keys are required for changes; viewer keys may read.
 | GET | `/api/deployments/{name}/logs` | Engine logs |
 | GET | `/api/deployments/{name}/report?format=json\|md\|html` | Optimization history report |
 | GET | `/api/deployments/{name}/trials` | Raw optimization history records |
-| PUT | `/api/deployments/{name}/quality` | Set the quality suite (benchmarks and thresholds) |
+| PUT | `/api/deployments/{name}/quality` | Set the quality suite (benchmarks and thresholds) and `apply`: `auto` or `manual` switching to background results |
+| GET / DELETE | `/api/deployments/{name}/workload` | Learned traffic shape / forget it |
+| GET | `/api/deployments/{name}/outcomes?days=7` | Task outcomes and cost per successful task |
+| POST | `/v1/outcomes` | Report a task's result: `{"task": "...", "success": true}` (inference key) |
+| GET | `/api/registry` | Models this machine remembers, and launch workarounds |
+| DELETE | `/api/registry/{model}` | Forget a model's remembered settings and built variants |
 | GET | `/api/benchmarks` | Available benchmarks |
 | GET | `/api/proposals` | Tuning proposals |
 | POST | `/api/proposals/{id}/approve`, `/reject` | Act on a proposal |
