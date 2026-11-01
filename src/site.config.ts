@@ -5,8 +5,9 @@ export const SITE = {
   description:
     'Tunyx turns your GPUs into fast, quality-checked, OpenAI-compatible endpoints, tuned to your workload and kept healthy automatically.',
   github: 'https://github.com/Tunyx-ai/tunyx',
+  publicRepo: false, // GitHub links appear once the code repository is public
   email: 'varunkavin5@gmail.com',
-  status: 'Private beta',
+  status: 'Private pilot',
   // Switch to `pip install tunyx` once the package is published on PyPI.
   install: 'pip install git+https://github.com/Tunyx-ai/tunyx',
 };
@@ -19,4 +20,5 @@ export function url(path = ''): string {
   return `${base}/${path.replace(/^\//, '')}`;
 }
 
-export const pilotHref = `mailto:${SITE.email}?subject=${encodeURIComponent('Tunyx pilot')}`;
+export const pilotHref = `mailto:${SITE.email}?subject=${encodeURIComponent('Tunyx free pilot')}&body=${encodeURIComponent(
+  'Hi,\n\nWe would like to try Tunyx.\n\nModel(s) we run or plan to run:\nGPU (or cloud):\nWhat we use today (API, Ollama, vLLM, ...):\n\nThanks,\n')}`;

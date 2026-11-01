@@ -17,7 +17,6 @@ export default defineConfig({
       logo: { src: './src/assets/logo.svg', alt: 'Tunyx' },
       favicon: '/favicon.svg',
       customCss: ['./src/styles/starlight.css'],
-      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/Tunyx-ai/tunyx' }],
       lastUpdated: false,
       expressiveCode: {
         themes: ['github-dark-default', 'github-light-default'],
