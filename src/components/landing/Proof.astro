@@ -1,16 +1,18 @@
 ---
-// Illustrative curve shape (labelled as such on the page). Tunyx measures the real one on your hardware.
-const conc = [1, 2, 4, 8, 16, 32];
-const stock = [96, 182, 334, 560, 718, 690];
-const tuned = [108, 214, 418, 773, 1118, 1236];
+// Measured, not illustrative: one real Tunyx run vs stock vLLM on the same GPU, model and workload (src/data/proof.json).
+import proof from '../../data/proof.json';
+const conc = proof.concurrency;
+const stock = proof.stock;
+const tuned = proof.tuned;
 
 const W = 560, H = 300, pl = 52, pr = 92, pt = 18, pb = 40;
-const yMax = 1400;
+const yMax = Math.ceil(Math.max(...tuned, ...stock) / 250) * 250;
 const x = (i: number) => pl + (i / (conc.length - 1)) * (W - pl - pr);
 const y = (v: number) => pt + (1 - v / yMax) * (H - pt - pb);
 const path = (vals: number[]) => vals.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
-const yTicks = [0, 350, 700, 1050, 1400];
+const yTicks = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(yMax * f));
 const data = JSON.stringify({ conc, stock, tuned });
+const last = conc.length - 1;
 
 const facts = [
   { v: '~0.2 ms', k: 'median latency the gateway adds', note: 'measured on a 6-CPU host' },
@@ -28,14 +30,14 @@ const facts = [
         Every technique Tunyx tries is logged with its speed and benchmark scores, and the engine’s stock defaults are
         measured on the same GPU for comparison. Share the full report as a web page.
       </p>
-      <div class="status-mock" aria-label="Example optimization report">
-        <div><span class="m">$</span> tunyx report qwen-agent --last 1</div>
-        <div><span class="k">kept</span>      FP8 per-channel        <b>+31% goodput</b>   gsm8k −0.9 pts</div>
-        <div><span class="r">stepped</span>   INT4, calibrated       +47% goodput   <span class="x">gsm8k −28 pts</span></div>
-        <div><span class="k">kept</span>      N-gram speculation     <b>+12% goodput</b>   lossless</div>
-        <div class="dim">reverted  async scheduling       +1.2% (needs +3%)</div>
-        <div>vs stock engine defaults: <b>+38% goodput</b></div>
-        <div class="dim"># example output</div>
+      <div class="status-mock" aria-label="Real optimization report">
+        <div><span class="m">$</span> tunyx report qwen7b --last 1</div>
+        <div><span class="k">promoted</span>  FP8 weights + n-gram    <b>536 tok/s @8</b>   gsm8k 94% (ref 93%)</div>
+        <div><span class="r">rejected</span>  FP8 KV cache           1,300 tok/s     <span class="x">gsm8k 9%</span></div>
+        <div><span class="r">reverted</span>  NVFP4 (built by Tunyx)  255 tok/s       slower here</div>
+        <div class="dim">reverted  KV offload to CPU      −2% goodput</div>
+        <div>vs stock vLLM, 8 users: <b>+90% goodput</b>; 48 users: stock misses targets</div>
+        <div class="dim"># real run · {proof.hardware} · {proof.measured_at}</div>
       </div>
     </div>
 
@@ -43,16 +45,16 @@ const facts = [
       <figcaption>
         <div>
           <h3>Goodput vs concurrent users</h3>
-          <p class="sub">Tokens/s from requests that met the agent profile’s latency targets</p>
+          <p class="sub">Tokens/s from requests that met the agent profile’s latency targets · {proof.model}, {proof.hardware}</p>
         </div>
         <button class="tbl-toggle" type="button" aria-pressed="false" data-table-toggle>Table</button>
       </figcaption>
       <ul class="legend" aria-label="Legend">
         <li><svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" stroke="var(--series-tuned)" stroke-width="2.5" stroke-linecap="round" /></svg>Tuned by Tunyx</li>
-        <li><svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" stroke="var(--series-stock)" stroke-width="2" stroke-dasharray="4 3" stroke-linecap="round" /></svg>Stock engine defaults</li>
+        <li><svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" stroke="var(--series-stock)" stroke-width="2" stroke-dasharray="4 3" stroke-linecap="round" /></svg>Stock vLLM defaults</li>
       </ul>
       <div class="plot" data-plot>
-        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Line chart: tuned config delivers more goodput than stock defaults at every concurrency level, 773 vs 560 tokens per second at 8 users.">
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Line chart: Tunyx's tuned config delivers more goodput than stock vLLM at every concurrency level, ${tuned[2]} vs ${stock[2]} tokens per second at ${conc[2]} users.`}>
           {yTicks.map((t) => (
             <g>
               <line x1={pl} x2={W - pr} y1={y(t)} y2={y(t)} class={t === 0 ? 'axis' : 'grid'} />
@@ -65,8 +67,8 @@ const facts = [
           <path d={path(tuned)} class="ln tuned" />
           {tuned.map((v, i) => <circle cx={x(i)} cy={y(v)} r="4" class="pt tuned-pt" />)}
           {stock.map((v, i) => <circle cx={x(i)} cy={y(v)} r="4" class="pt stock-pt" />)}
-          <text x={x(5) + 10} y={y(tuned[5]) + 4} class="dl">Tuned</text>
-          <text x={x(5) + 10} y={y(stock[5]) + 4} class="dl">Stock</text>
+          <text x={x(last) + 10} y={y(tuned[last]) + 4} class="dl">Tunyx</text>
+          <text x={x(last) + 10} y={y(stock[last]) + 4} class="dl">Stock vLLM</text>
           <line class="xh" data-xh x1="0" x2="0" y1={pt} y2={H - pb} />
           <rect class="hit" data-hit x={pl - 20} y={pt} width={W - pl - pr + 40} height={H - pt - pb} />
         </svg>
@@ -81,7 +83,7 @@ const facts = [
           ))}
         </tbody>
       </table>
-      <p class="note">Illustrative shape. Tunyx measures your real curve on your hardware and workload.</p>
+      <p class="note">Measured {proof.measured_at} on {proof.hardware}, {proof.engine}: {proof.model}, agent workload, same GPU and prompts for both. Tunyx: {proof.tuned_config}. Stock: {proof.stock_config}. Quality: {proof.quality.benchmark} {proof.quality.tuned}% vs {proof.quality.full_precision}% at full precision. Your numbers depend on your hardware and workload; Tunyx measures them for you.</p>
     </figure>
   </div>
 
