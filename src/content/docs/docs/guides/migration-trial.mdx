@@ -77,7 +77,8 @@ tunyx recommend -p agent --current qwen2.5:7b --evaluate 3 \
 ```
 
 Candidates are planned for this machine from their configuration alone and ranked by how many bytes they read
-per generated token. `--evaluate N` deploys, optimizes and measures the top N on your workload and quality gate,
-then recommends the best on your objective among those that pass; `--apply` deploys it. A different **model
+per generated token. `--evaluate N` schedules a background job that deploys, optimizes and measures the top N on your workload and
+quality gate, one at a time and only while traffic is light (measurements never evict a serving model). See the
+results with `tunyx recommend --results`, or add `--now` to measure immediately. A different **model
 family** changes behaviour benchmarks don't fully capture (tone, formatting, tool-call style), so with
 `--current` it is only applied with `--allow-family-switch`.

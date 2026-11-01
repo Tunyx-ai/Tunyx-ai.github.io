@@ -72,6 +72,7 @@ Everything has a default. Settings marked **runtime** can also be changed on a r
 | `TUNYX_GPU_MEMORY_GB` | – | override detected per-GPU memory (exotic environments) |
 | `TUNYX_VLLM_PYTHON` / `TUNYX_SGLANG_PYTHON` / `TUNYX_MLX_PYTHON` / `TUNYX_LLAMACPP_SERVER` | – | engines installed in their own environments |
 | `TUNYX_MAX_PASSES` | – | cap on optimization techniques tried per run (bounds optimization time; `0` = base configs only) |
+| `optimize_max_load` (`TUNYX_OPTIMIZE_MAX_LOAD`) **runtime** | `0.25` | background optimization and model evaluation run only while models are below this share of capacity |
 | `optimize_budget_gpu_hours` (`TUNYX_OPTIMIZE_BUDGET`) **runtime** | – | GPU-hours background optimization may use per deployment in any 7 days |
 | `TUNYX_CAPTURE_PROMPTS` | `0` | opt-in fraction of conversations kept (redacted) for benchmarks and calibration |
 | `TUNYX_CAPTURE_MAX` / `TUNYX_CAPTURE_RETENTION_DAYS` | `2000` / `7` | cap and age limit on kept samples |

@@ -95,7 +95,9 @@ Tuned config vs stock engine defaults on this workload: +38% goodput
 
 ## Background optimization: automatic or manual switching
 
-`tunyx up` serves first and optimizes afterwards. When the background job finds a configuration that is clearly
+`tunyx up` serves first and optimizes afterwards. The background job runs only while traffic is light: every
+model on the same GPUs below 25% of its measured capacity (`optimize_max_load`), or inside your optimization
+window. It pauses if traffic picks up and continues in the next quiet period. When the background job finds a configuration that is clearly
 faster and passes every threshold:
 
 - **automatic (default):** Tunyx switches to it with a canary and automatic rollback;
