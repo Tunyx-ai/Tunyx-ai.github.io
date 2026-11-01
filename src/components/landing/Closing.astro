@@ -2,15 +2,15 @@
 import { SITE, url, pilotHref } from '../../site.config';
 
 const steps = [
-  { c: SITE.install, n: 'Install' },
-  { c: 'pip install vllm', n: 'Add an engine' },
+  { c: 'sh install.sh', n: 'Install (pilot access)' },
   { c: 'tunyx up qwen2.5:7b', n: 'Deploy' },
+  { c: 'tunyx trial --from http://your-vllm:8000', n: 'Compare with today' },
 ];
 const faq = [
   ['Is Tunyx another inference engine?', `No, it's a control plane. It runs proven engines (vLLM, SGLang, llama.cpp, MLX), decides how to run them for your workload, proves the result, and operates them. See <a href="${url('docs/concepts/comparison/')}">how it compares</a> with Ollama, raw vLLM, NIM and managed APIs.`],
   ['What hardware and models does it support?', 'NVIDIA GPUs (including MIG slices and machines with 1–8 GPUs), AMD via ROCm, Apple Silicon and CPU servers. Any model your engine supports: Hugging Face repos, local checkpoints, GGUF files and LoRA adapters.'],
   ['Does any data leave my machines?', 'No. Tunyx runs entirely on your infrastructure and works air-gapped. There is no phone-home.'],
-  ['Can I try it without a GPU?', 'Yes. `tunyx demo` runs the whole product on a simulated H100 in about a minute, including a quality gate rejecting a broken quantized build.'],
+  ['How do I try it?', 'Request a free pilot. We set Tunyx up on your GPU with your model and send you a report comparing speed, quality and cost with what you run today. Pilot users also get `tunyx demo`, which runs the whole product on a simulated GPU, no hardware needed.'],
   ['Does it support multiple machines?', 'Today Tunyx manages one node with up to 8 GPUs, where most self-hosted inference runs. Multi-node fleets and replica autoscaling are on the roadmap.'],
   ['What does it cost?', `Tunyx is in ${SITE.status.toLowerCase()}. Pilots are free in exchange for feedback.`],
 ];
