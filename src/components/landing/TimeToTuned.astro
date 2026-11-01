@@ -1,0 +1,69 @@
+---
+// Measured on the same B200 run as the chart (src/data/proof.json). The by-hand column describes the same
+// experiments done manually; engineer time is an estimate with its assumptions stated on the page.
+import proof from '../../data/proof.json';
+const t = proof.timings;
+const stats = [
+  { v: `${t.first_serve_s} s`, k: 'from tunyx up to a live endpoint', n: 'highest-fidelity config that fits; tuning continues in the background' },
+  { v: `${t.full_search_min} min`, k: 'full search, unattended', n: `${t.configs_tried} configs, ${t.quality_evals} quality checks, 1 quantized build · 0 engineer minutes` },
+  { v: `${t.redeploy_known_s} s`, k: 'to redeploy, already tuned', n: 'the machine remembers the winning config' },
+];
+const rows = [
+  ['First working endpoint', 'Stock vLLM would not start on this machine (no CUDA compiler); you find the fix', `Live in ${t.first_serve_s} s, workaround applied automatically`],
+  ['Finding a fast config', `${t.configs_tried} experiments by hand: edit flags, restart (~1 min each), benchmark 5 concurrency levels, score quality, compare`, `${t.full_search_min} min in the background while it serves`],
+  ['Catching broken answers', 'Only if you run evals: FP8 KV cache measured 2.4× faster while GSM8K fell to 9%', 'Rejected automatically'],
+  ['Result', `${proof.stock[2]} tok/s at 8 users; collapses at 48 (22.7 s to first token)`, `${proof.tuned[2]} tok/s at 8 users (${(proof.tuned[2] / proof.stock[2]).toFixed(1)}×); ${proof.tuned[4]} at 48`],
+  ['Next model or engine upgrade', 'Repeat the whole process', 'Repeated for you, in quiet hours'],
+];
+---
+<section class="section" id="time">
+  <div class="container">
+    <div class="head reveal">
+      <span class="eyebrow">Time is money</span>
+      <h2 class="h-section">An afternoon of tuning, done while you work.</h2>
+      <p class="lede">
+        vLLM doesn’t tune itself to your traffic: batch size, context, precision and speculation are flags someone has to
+        find, test and re-test. Tunyx runs those experiments on its own, measured on the same {proof.hardware.split(' (')[0]}.
+      </p>
+    </div>
+    <div class="stats reveal">
+      {stats.map((s) => (
+        <div class="stat"><div class="sv">{s.v}</div><div class="sk">{s.k}</div><div class="sn">{s.n}</div></div>
+      ))}
+    </div>
+    <div class="card cmp reveal">
+      <table>
+        <thead><tr><th scope="col"></th><th scope="col">Tuning vLLM by hand</th><th scope="col">With Tunyx</th></tr></thead>
+        <tbody>
+          {rows.map(([a, b, c]) => <tr><th scope="row">{a}</th><td>{b}</td><td class="us">{c}</td></tr>)}
+        </tbody>
+      </table>
+      <p class="note">
+        Measured {proof.measured_at}: {proof.model} on {proof.hardware}, agent workload. Each experiment takes about {t.minutes_per_experiment} min of GPU time here
+        (engine start ~{t.engine_start_s} s, benchmark, quality check), so even by hand the machine time is similar; the difference is the engineer. Estimate: 4–8 hours of hands-on work to
+        script benchmarks and evals, run and compare the same experiments, and debug the startup failure; at $100/h
+        that is $400–800 per model and GPU type, again at every model or engine upgrade.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .head { max-width: 760px; }
+  .lede { margin-top: 18px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 40px; border: 1px solid var(--line-1); border-radius: var(--radius-lg); overflow: hidden; }
+  .stat { padding: 26px 24px; display: flex; flex-direction: column; gap: 6px; background: rgba(255, 255, 255, 0.015); }
+  .stat + .stat { border-left: 1px solid var(--line-1); }
+  .sv { font-size: clamp(30px, 3vw, 40px); font-weight: 620; letter-spacing: -0.035em; color: var(--mint-300); font-variant-numeric: tabular-nums; }
+  .sk { font-size: 15px; color: var(--fg-1); }
+  .sn { font-size: 12.5px; color: var(--fg-3); }
+  .cmp { margin-top: 24px; padding: 8px 22px 18px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
+  th, td { text-align: left; vertical-align: top; padding: 14px 12px; border-bottom: 1px solid var(--line-1); }
+  thead th { color: var(--fg-3); font-weight: 500; font-size: 12.5px; }
+  tbody th { color: var(--fg-1); font-weight: 560; width: 22%; }
+  td { color: var(--fg-2); width: 39%; }
+  td.us { color: var(--fg-1); }
+  .note { margin: 14px 0 0; font-size: 12px; color: var(--fg-3); line-height: 1.6; }
+  @media (max-width: 860px) { .stats { grid-template-columns: 1fr; } .stat + .stat { border-left: 0; border-top: 1px solid var(--line-1); } }
+</style>

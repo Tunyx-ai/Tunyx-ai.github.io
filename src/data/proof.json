@@ -4,12 +4,56 @@
   "engine": "vLLM 0.32",
   "profile": "agent",
   "measured_at": "2026-11-01",
-  "concurrency": [1, 4, 8, 16, 48],
-  "stock": [49, 164, 282, 362, 46],
-  "tuned": [109, 299, 536, 634, 891],
-  "stock_ttft_ms": [280, 178, 118, 320, 22727],
-  "tuned_ttft_ms": [132, 145, 91, 169, 445],
-  "quality": {"benchmark": "GSM8K", "tuned": 94, "full_precision": 93},
+  "concurrency": [
+    1,
+    4,
+    8,
+    16,
+    48
+  ],
+  "stock": [
+    49,
+    164,
+    282,
+    362,
+    46
+  ],
+  "tuned": [
+    109,
+    299,
+    536,
+    634,
+    891
+  ],
+  "stock_ttft_ms": [
+    280,
+    178,
+    118,
+    320,
+    22727
+  ],
+  "tuned_ttft_ms": [
+    132,
+    145,
+    91,
+    169,
+    445
+  ],
+  "quality": {
+    "benchmark": "GSM8K",
+    "tuned": 94,
+    "full_precision": 93
+  },
   "tuned_config": "FP8 weights + n-gram speculation, 32k context, 48 concurrent sequences",
-  "stock_config": "bf16, vLLM defaults (256 sequences, model max context)"
+  "stock_config": "bf16, vLLM defaults (256 sequences, model max context)",
+  "timings": {
+    "first_serve_s": 55,
+    "redeploy_known_s": 41,
+    "full_search_min": 62,
+    "configs_tried": 8,
+    "quality_evals": 6,
+    "engine_start_s": 65,
+    "minutes_per_experiment": "5-7",
+    "quant_build_min": 21
+  }
 }
